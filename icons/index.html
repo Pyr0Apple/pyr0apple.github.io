@@ -1,0 +1,3281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoR Champion Relic Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #07090f;
+    --bg-panel: #0d1119;
+    --bg-card: #111827;
+    --bg-hover: #1a2236;
+    --gold: #c89b3c;
+    --gold-light: #f0d080;
+    --gold-dim: #7a5e22;
+    --accent: #4a9eff;
+    --text: #d4c9b0;
+    --text-dim: #7a7060;
+    --border: #2a2215;
+    --border-gold: #3a2e10;
+    --epic: #e060ff;
+    --epic-bg: #2a0a3a;
+    --epic-border: #7a20b0;
+    --rare: #4a9eff;
+    --rare-bg: #0a1a3a;
+    --rare-border: #1a50a0;
+    --common: #50d060;
+    --common-bg: #0a2a10;
+    --common-border: #1a601a;
+    --consumable: #ff9a2e;
+    --consumable-bg: #1e0e00;
+    --consumable-border: #7a3d00;
+    --item-h: 58px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text);
+    height: 100vh;
+    max-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(74,158,255,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(200,155,60,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(224,96,255,0.02) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 18px 40px 18px;
+    border-bottom: 1px solid var(--border-gold);
+    background: linear-gradient(180deg, rgba(200,155,60,0.08) 0%, transparent 100%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .header-rune {
+    width: 48px; height: 48px;
+    border: 2px solid var(--gold-dim);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    background: radial-gradient(circle, rgba(200,155,60,0.15), transparent);
+  }
+
+  header h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 22px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-shadow: 0 0 30px rgba(200,155,60,0.4);
+    line-height: 1.2;
+  }
+
+  header p {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .legend {
+    position: relative; z-index: 10;
+    display: flex; gap: 20px; align-items: center;
+    padding: 10px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.3);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Exo 2', sans-serif;
+    flex-shrink: 0;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .legend-dot.epic { background: var(--epic); box-shadow: 0 0 6px var(--epic); }
+  .legend-dot.rare { background: var(--rare); box-shadow: 0 0 6px var(--rare); }
+  .legend-dot.common { background: var(--common); box-shadow: 0 0 6px var(--common); }
+  .legend-dot.consumable { background: var(--consumable); box-shadow: 0 0 6px var(--consumable); }
+
+  .main-wrapper {
+    position: relative; z-index: 10;
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    height: 0; /* forces flex child to not exceed parent */
+  }
+
+  .main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Detail column = just the scrollable detail, no filter panel */
+  .detail-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border-gold);
+    background: rgba(0,0,0,0.25);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    /* overflow:hidden removed — it was clipping the nav buttons on smaller screens */
+  }
+
+  .drum-search-wrap {
+    padding: 10px 12px 8px;
+    border-bottom: 1px solid var(--border-gold);
+    position: relative;
+    flex-shrink: 0;
+    z-index: 20;
+  }
+  .drum-search-wrap input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-gold);
+    color: var(--text);
+    padding: 7px 30px 7px 32px;
+    border-radius: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .drum-search-wrap input:focus { border-color: var(--gold-dim); }
+  .drum-search-wrap input::placeholder { color: var(--text-dim); }
+  .drum-search-icon {
+    position: absolute; left: 22px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px; color: var(--text-dim); pointer-events: none;
+  }
+  .drum-search-clear {
+    position: absolute; right: 22px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px; color: var(--text-dim);
+    cursor: pointer; line-height: 1;
+    display: none;
+    background: none; border: none; padding: 0;
+    transition: color 0.15s;
+  }
+  .drum-search-clear:hover { color: var(--text); }
+  .drum-search-wrap.has-text .drum-search-clear { display: block; }
+
+  /* 
+   * DRUM CONTAINER — takes remaining space in sidebar.
+   * The selector bar is a SIBLING of the viewport, absolutely
+   * positioned in the center of drum-container so it NEVER moves.
+   */
+  .drum-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+
+
+  /* Scrollable viewport — same size as container, clips content */
+  .drum-viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* Top fade only — bottom fade removed (caused dark dip artifact during scroll) */
+  .drum-viewport::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 180px;
+    z-index: 5;
+    pointer-events: none;
+    top: 0;
+    background: linear-gradient(to bottom, rgba(7,9,15,0.97) 0%, transparent 100%);
+  }
+
+  /* The moving track */
+  .drum-track {
+    position: absolute;
+    left: 0; right: 0;
+    top: 0;
+    will-change: transform;
+  }
+  .drum-track.animating {
+    transition: transform 0.15s ease;
+  }
+
+  /* Individual drum row */
+  .drum-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: var(--item-h);
+    padding: 0 14px 0 16px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(42,34,21,0.3);
+    color: var(--text-dim);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    /* Single transition that covers everything — no mid-scroll flicker */
+    transition: color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+    position: relative;
+    transform-origin: left center;
+    will-change: transform;
+  }
+  .drum-item:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.02); }
+
+  /* Gold left-edge accent bar — hidden by default */
+  .drum-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 10px; bottom: 10px;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background: var(--gold);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .drum-item.active {
+    color: var(--gold-light);
+    background: linear-gradient(90deg, rgba(200,155,60,0.10) 0%, rgba(200,155,60,0.03) 60%, transparent 100%);
+    transform: scaleX(1.025) scaleY(1.04);
+    font-size: 14.5px;
+    font-weight: 700;
+  }
+  .drum-item.active::before { opacity: 1; }
+
+  .champ-img {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-gold);
+    flex-shrink: 0;
+    background: var(--bg-card);
+    /* Use box-shadow only — border-color transition was causing the flicker */
+    transition: box-shadow 0.18s ease, border-color 0.18s ease, width 0.18s ease, height 0.18s ease;
+  }
+  .drum-item.active .champ-img,
+  .drum-item.active div.champ-img {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(200,155,60,0.35), 0 0 14px rgba(200,155,60,0.45);
+    width: 40px; height: 40px;
+  }
+
+  .champ-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'Exo 2', sans-serif;
+    background: rgba(255,255,255,0.05);
+    padding: 2px 7px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+  .drum-item.active .champ-count {
+    background: rgba(200,155,60,0.15);
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  /* Nav arrows — hidden, navigation via scroll/wheel/click only */
+  .drum-nav { display: none; }
+
+  /* Detail panel */
+  .detail {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px 40px;
+  }
+  .detail::-webkit-scrollbar { width: 6px; }
+  .detail::-webkit-scrollbar-track { background: transparent; }
+  .detail::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+
+  .detail-empty {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: var(--text-dim);
+    font-family: 'Exo 2', sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 13px;
+  }
+  .detail-empty .big-icon { font-size: 60px; opacity: 0.2; }
+
+  .detail-header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 30px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-gold);
+    /* Stick to top of the scrollable .detail panel */
+    position: sticky;
+    top: -30px;       /* cancels the 30px top padding of .detail */
+    z-index: 20;
+    background: var(--bg-deep);
+    /* Stretch edge-to-edge so background covers full width */
+    margin-left: -40px;
+    margin-right: -40px;
+    padding-left: 40px;
+    padding-right: 40px;
+    padding-top: 30px;
+    margin-top: -30px;
+  }
+
+  .detail-champ-img {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--gold-dim);
+    box-shadow: 0 0 20px rgba(200,155,60,0.2), 0 0 40px rgba(200,155,60,0.08);
+  }
+
+  .detail-champ-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 26px;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(200,155,60,0.3);
+  }
+  .detail-champ-sub {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── RELIC FILTER — inline in detail header area ── */
+  .relic-filter-panel {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 24px;
+    border-bottom: 1px solid var(--border-gold);
+    background: rgba(0,0,0,0.22);
+    position: relative;
+    z-index: 50;
+  }
+  .relic-filter-label {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Active pills row — pills appear here as relics are picked */
+  .relic-pills-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .relic-slot-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px 3px 9px;
+    border-radius: 14px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .relic-slot-pill.epic       { background: var(--epic-bg);        border: 1px solid var(--epic-border);        color: var(--epic); }
+  .relic-slot-pill.rare       { background: var(--rare-bg);        border: 1px solid var(--rare-border);        color: var(--rare); }
+  .relic-slot-pill.common     { background: var(--common-bg);      border: 1px solid var(--common-border);      color: var(--common); }
+  .relic-slot-pill.consumable { background: var(--consumable-bg);  border: 1px solid var(--consumable-border);  color: var(--consumable); }
+  .relic-slot-pill-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .relic-pill-x {
+    margin-left: 1px;
+    font-size: 10px;
+    opacity: 0.6;
+    cursor: pointer;
+    line-height: 1;
+    padding: 1px 2px;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+  .relic-pill-x:hover { opacity: 1; }
+
+  /* The one search input */
+  .relic-input-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .relic-input-wrap input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-gold);
+    color: var(--text);
+    padding: 5px 26px 5px 28px;
+    border-radius: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    width: 180px;
+    outline: none;
+    transition: border-color 0.2s, width 0.2s;
+  }
+  .relic-input-wrap input:focus { border-color: var(--gold-dim); width: 220px; }
+  .relic-input-wrap input::placeholder { color: var(--text-dim); }
+  .relic-input-search-icon {
+    position: absolute; left: 9px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px; color: var(--text-dim); pointer-events: none;
+  }
+  .relic-input-clear {
+    position: absolute; right: 8px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px; color: var(--text-dim);
+    cursor: pointer; line-height: 1;
+    display: none;
+    background: none; border: none; padding: 0;
+    transition: color 0.15s;
+  }
+  .relic-input-clear:hover { color: var(--text); }
+  .relic-input-wrap.has-text .relic-input-clear { display: block; }
+
+  /* Autocomplete dropdown — fixed so it escapes all overflow/clip contexts */
+  .relic-autocomplete {
+    position: fixed;
+    top: auto; /* set by JS */
+    left: auto; /* set by JS */
+    min-width: 280px;
+    background: #0d1119;
+    border: 1px solid var(--border-gold);
+    border-radius: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    z-index: 9000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.85);
+    display: none;
+  }
+  .relic-autocomplete.open { display: block; }
+  .relic-autocomplete::-webkit-scrollbar { width: 4px; }
+  .relic-autocomplete::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 2px; }
+  .relic-ac-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 1px solid rgba(42,34,21,0.3);
+    transition: background 0.12s;
+  }
+  .relic-ac-item:last-child { border-bottom: none; }
+  .relic-ac-item:hover { background: var(--bg-hover); }
+  .relic-ac-item.disabled { opacity: 0.3; pointer-events: none; }
+  .relic-ac-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .relic-ac-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.05);
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-family: 'Exo 2', sans-serif;
+    flex-shrink: 0;
+  }
+
+  /* Highlight matched relic badge — border glow only, text color unchanged */
+  .relic-badge.filter-match {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 1px var(--gold), 0 0 8px rgba(200,155,60,0.55) !important;
+  }
+
+  .builds-grid { display: flex; flex-direction: column; gap: 14px; }
+
+  .build-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    animation: fadeIn 0.3s ease forwards;
+    opacity: 0;
+    overflow: visible;
+    cursor: pointer;
+  }
+  .build-card:hover {
+    border-color: var(--gold-dim);
+    box-shadow: 0 4px 20px rgba(200,155,60,0.08);
+  }
+  .build-card.selected {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 2px rgba(200,155,60,0.7), 0 0 20px rgba(200,155,60,0.25) !important;
+    opacity: 1 !important;
+  }
+  .build-card.jump-highlight {
+    animation: jumpPulse 1s ease forwards !important;
+    opacity: 1 !important;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes jumpPulse {
+    0%   { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold), 0 0 40px rgba(200,155,60,0.7); }
+    100% { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(200,155,60,0.7), 0 0 20px rgba(200,155,60,0.25); }
+  }
+
+  .build-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .relic-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    position: relative;
+    cursor: default;
+  }
+  .relic-badge.epic       { background: var(--epic-bg);        border: 1px solid var(--epic-border);        color: var(--epic);        text-shadow: 0 0 8px rgba(224,96,255,0.4); }
+  .relic-badge.rare       { background: var(--rare-bg);        border: 1px solid var(--rare-border);        color: var(--rare);        text-shadow: 0 0 8px rgba(74,158,255,0.4); }
+  .relic-badge.common     { background: var(--common-bg);      border: 1px solid var(--common-border);      color: var(--common);      text-shadow: 0 0 8px rgba(80,208,96,0.4); }
+  .relic-badge.consumable { background: var(--consumable-bg);  border: 1px solid var(--consumable-border);  color: var(--consumable);  text-shadow: 0 0 8px rgba(255,154,46,0.5); animation: consumable-pulse 2.5s ease-in-out infinite; }
+  @keyframes consumable-pulse {
+    0%, 100% { box-shadow: 0 0 4px rgba(255,154,46,0.3); }
+    50%       { box-shadow: 0 0 12px rgba(255,154,46,0.7), 0 0 20px rgba(255,154,46,0.2); }
+  }
+
+  .relic-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .relic-badge.epic        .relic-dot { background: var(--epic);        box-shadow: 0 0 4px var(--epic); }
+  .relic-badge.rare        .relic-dot { background: var(--rare);        box-shadow: 0 0 4px var(--rare); }
+  .relic-badge.common      .relic-dot { background: var(--common);      box-shadow: 0 0 4px var(--common); }
+  .relic-badge.consumable  .relic-dot { background: var(--consumable);  box-shadow: 0 0 4px var(--consumable); }
+
+  /* ── RELIC TOOLTIP ── */
+  #relicTooltip {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    width: 460px;
+    background: #111827;
+    border: 1px solid rgba(200,155,60,0.45);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: 0 16px 56px rgba(0,0,0,0.95), 0 0 0 1px rgba(200,155,60,0.1);
+    pointer-events: none;
+    font-family: 'Exo 2', sans-serif;
+    text-align: left;
+  }
+  #relicTooltip.visible { display: block; }
+  #relicTooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%; left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: rgba(200,155,60,0.45);
+  }
+  .rtt-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 26px; font-weight: 700;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  .rtt-tier-row {
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 12px;
+    font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: #a09880;
+  }
+  .rtt-tier-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .rtt-desc {
+    font-size: 17px;
+    color: #e8dfc8;
+    line-height: 1.65;
+    margin-bottom: 0;
+    font-weight: 500;
+  }
+  .rtt-source {
+    margin-top: 12px;
+    font-size: 15px;
+    color: #c89b3c;
+    border-top: 1px solid rgba(200,155,60,0.2);
+    padding-top: 10px;
+    line-height: 1.6;
+  }
+  .rtt-source b { color: #f0d080; }
+  .rtt-glory {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #c0b090;
+    font-style: italic;
+  }
+  .rtt-champion {
+    margin-top: 10px;
+    font-size: 15px;
+    color: #a09880;
+  }
+  .rtt-champion b { color: #e8dfc8; }
+  .rtt-consumable-note {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--consumable);
+    border-top: 1px solid var(--consumable-border);
+    padding-top: 10px;
+    line-height: 1.55;
+  }
+
+  /* ── KEYWORD HIGHLIGHT & GLOSSARY ── */
+  .kw-highlight {
+    color: #f0d080;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(200,155,60,0.6);
+    border-bottom: 1px dotted rgba(200,155,60,0.5);
+    cursor: help;
+  }
+
+  .rtt-keywords {
+    margin-top: 12px;
+    border-top: 1px solid rgba(200,155,60,0.25);
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .rtt-keywords-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8a7a55;
+    margin-bottom: 4px;
+  }
+  .rtt-kw-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(200,155,60,0.18);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .rtt-kw-icon { font-size: 18px; flex-shrink: 0; line-height: 1.5; }
+  .rtt-kw-body { flex: 1; min-width: 0; }
+  .rtt-kw-name {
+    color: #f0d080;
+    font-weight: 700;
+    font-size: 16px;
+    font-family: 'Rajdhani', sans-serif;
+    line-height: 1.3;
+  }
+  .rtt-kw-desc {
+    color: #c8bfa8;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 2px;
+  }
+
+  .build-bottom { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+  .star-level {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Exo 2', sans-serif; font-size: 13px;
+    color: var(--gold); font-weight: 600;
+    background: rgba(200,155,60,0.08);
+    border: 1px solid rgba(200,155,60,0.2);
+    padding: 4px 12px; border-radius: 20px;
+  }
+
+  .players-row {
+    margin-top: 10px;
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  }
+  .players-label {
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
+  }
+  .player-chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 2px 10px; border-radius: 12px;
+    font-size: 12px; color: var(--text); font-family: 'Exo 2', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .player-chip:hover {
+    background: rgba(200,155,60,0.15);
+    border-color: var(--gold-dim);
+    color: var(--gold-light);
+  }
+
+  /* ── PLAYER DRAWER ── */
+  #playerDrawer {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 380px;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border-gold);
+    box-shadow: -12px 0 48px rgba(0,0,0,0.85);
+    z-index: 8000;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+  #playerDrawer.open { transform: translateX(0); }
+
+  #playerDrawerOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 7999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+  #playerDrawerOverlay.open { opacity: 1; pointer-events: all; }
+
+  .pd-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border-gold);
+    background: linear-gradient(180deg, rgba(200,155,60,0.07) 0%, transparent 100%);
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .pd-header-text { flex: 1; min-width: 0; }
+  .pd-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 15px;
+    color: var(--gold);
+    letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pd-subtitle {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .pd-close {
+    background: none; border: none;
+    color: var(--text-dim); font-size: 18px;
+    cursor: pointer; padding: 2px 4px;
+    transition: color 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .pd-close:hover { color: var(--text); }
+
+  .pd-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px 20px;
+  }
+  .pd-body::-webkit-scrollbar { width: 5px; }
+  .pd-body::-webkit-scrollbar-track { background: transparent; }
+  .pd-body::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+
+  .pd-champ-group { margin-bottom: 16px; }
+  .pd-champ-label {
+    display: flex; align-items: center; gap: 9px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 7px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pd-champ-label img {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border-gold);
+  }
+
+  .pd-build-row {
+    display: flex; align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    margin-bottom: 7px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    position: relative;
+  }
+  .pd-build-row:hover {
+    border-color: var(--gold-dim);
+    background: var(--bg-hover);
+    box-shadow: 0 0 12px rgba(200,155,60,0.1);
+  }
+  .pd-build-relics {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+  .pd-build-star {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 11px;
+    color: var(--gold);
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-top: 3px;
+  }
+  .pd-build-jump {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: 'Exo 2', sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 5px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .pd-build-jump::after { content: '→'; }
+
+  /* ── TOP NAV (tabs + legend) ── */
+  .top-nav {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; gap: 0;
+    border-bottom: 1px solid var(--border-gold);
+    background: rgba(0,0,0,0.3);
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    padding: 10px 24px;
+    background: none; border: none;
+    color: var(--text-dim);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .legend {
+    display: flex; gap: 20px; align-items: center;
+    padding: 10px 24px;
+    font-size: 12px; letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Exo 2', sans-serif;
+    margin-left: auto;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .legend-dot.epic { background: var(--epic); box-shadow: 0 0 6px var(--epic); }
+  .legend-dot.rare { background: var(--rare); box-shadow: 0 0 6px var(--rare); }
+  .legend-dot.common { background: var(--common); box-shadow: 0 0 6px var(--common); }
+  .legend-dot.consumable { background: var(--consumable); box-shadow: 0 0 6px var(--consumable); }
+
+  /* ── RELIC INDEX ── */
+  .relic-index-root {
+    display: flex; flex-direction: column;
+    flex: 1; min-height: 0; overflow: hidden;
+    position: relative; z-index: 10;
+  }
+  .ri-toolbar {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--border-gold);
+    background: rgba(0,0,0,0.22);
+    flex-shrink: 0; flex-wrap: wrap;
+  }
+  .ri-tier-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ri-tier-btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 14px; border-radius: 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-gold);
+    color: var(--text-dim);
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .ri-tier-btn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+  .ri-tier-btn.active[data-tier="all"]         { background: rgba(200,155,60,0.15); border-color: var(--gold-dim); color: var(--gold); }
+  .ri-tier-btn.active[data-tier="epic"]        { background: var(--epic-bg); border-color: var(--epic-border); color: var(--epic); }
+  .ri-tier-btn.active[data-tier="rare"]        { background: var(--rare-bg); border-color: var(--rare-border); color: var(--rare); }
+  .ri-tier-btn.active[data-tier="common"]      { background: var(--common-bg); border-color: var(--common-border); color: var(--common); }
+  .ri-tier-btn.active[data-tier="consumable"]  { background: var(--consumable-bg); border-color: var(--consumable-border); color: var(--consumable); }
+  .ri-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .ri-dot.epic        { background: var(--epic); box-shadow: 0 0 4px var(--epic); }
+  .ri-dot.rare        { background: var(--rare); box-shadow: 0 0 4px var(--rare); }
+  .ri-dot.common      { background: var(--common); box-shadow: 0 0 4px var(--common); }
+  .ri-dot.consumable  { background: var(--consumable); box-shadow: 0 0 4px var(--consumable); }
+  .ri-search-wrap {
+    position: relative; flex-shrink: 0;
+  }
+  .ri-search-icon {
+    position: absolute; left: 9px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px; pointer-events: none; color: var(--text-dim);
+  }
+  .ri-search-wrap input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-gold);
+    color: #e8dfc8; padding: 6px 26px 6px 28px;
+    border-radius: 6px; font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; width: 200px; outline: none;
+    transition: border-color 0.2s;
+  }
+  .ri-search-wrap input:focus { border-color: var(--gold-dim); }
+  .ri-search-wrap input::placeholder { color: var(--text-dim); }
+  .ri-search-clear {
+    position: absolute; right: 8px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px; color: var(--text-dim);
+    cursor: pointer; background: none; border: none; padding: 0;
+    display: none; transition: color 0.15s; line-height: 1;
+  }
+  .ri-search-clear:hover { color: var(--text); }
+  .ri-search-wrap.has-text .ri-search-clear { display: block; }
+
+  /* Relic Index autocomplete dropdown */
+  .ri-autocomplete {
+    position: fixed;
+    display: none;
+    background: #0d1119;
+    border: 1px solid var(--border-gold);
+    border-radius: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 9000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.85);
+    min-width: 240px;
+  }
+  .ri-autocomplete.open { display: block; }
+  .ri-autocomplete::-webkit-scrollbar { width: 4px; }
+  .ri-autocomplete::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 2px; }
+  .ri-ac-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; font-weight: 600;
+    color: #e8dfc8;
+    border-bottom: 1px solid rgba(42,34,21,0.3);
+    transition: background 0.12s;
+  }
+  .ri-ac-item:last-child { border-bottom: none; }
+  .ri-ac-item:hover { background: var(--bg-hover); }
+  .ri-ac-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .ri-ac-icon { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+  .ri-ac-tier {
+    margin-left: auto; font-size: 10px; color: var(--text-dim);
+    font-family: 'Exo 2', sans-serif; letter-spacing: 0.5px;
+    text-transform: uppercase; flex-shrink: 0;
+  }
+
+  /* ── Keyword hover popup — appears in grid area when hovering detail panel ── */
+  .ri-build-row { position: relative; }
+  .ri-build-row-inner { display: flex; }
+  .ri-build-main { flex: 1; min-width: 0; }
+
+  .ri-kw-popup {
+    display: none;
+    position: fixed;
+    z-index: 8000;
+    width: 260px;
+    background: #111827;
+    border: 1px solid rgba(200,155,60,0.4);
+    border-radius: 10px;
+    padding: 10px 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.9);
+    pointer-events: none;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ri-kw-popup.visible { display: flex; }
+  .ri-kw-popup-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8a7a55;
+    margin-bottom: 2px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(200,155,60,0.15);
+  }
+  .ri-kw-popup-chip {
+    display: flex; align-items: flex-start; gap: 7px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(200,155,60,0.12);
+    border-radius: 6px;
+    padding: 6px 8px;
+  }
+  .ri-kw-popup-icon { font-size: 15px; flex-shrink: 0; line-height: 1.4; }
+  .ri-kw-popup-body { flex: 1; min-width: 0; }
+  .ri-kw-popup-name {
+    color: #f0d080; font-weight: 700;
+    font-size: 13px; font-family: 'Rajdhani', sans-serif;
+    line-height: 1.2;
+  }
+  .ri-kw-popup-desc {
+    color: #c8bfa8; font-size: 11px;
+    line-height: 1.4; margin-top: 2px;
+  }
+  .ri-sort-wrap {
+    display: flex; align-items: center; gap: 7px; flex-shrink: 0;
+  }
+  .ri-sort-label {
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
+  }
+  .ri-sort-wrap select {
+    background: #1a2236;
+    border: 1px solid var(--border-gold);
+    color: #e8dfc8;
+    padding: 5px 10px;
+    border-radius: 6px; font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; outline: none; cursor: pointer;
+  }
+  .ri-sort-wrap select option {
+    background: #1a2236;
+    color: #e8dfc8;
+  }
+  .ri-count {
+    margin-left: auto;
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 1px;
+  }
+  .ri-body {
+    display: flex; flex: 1; min-height: 0; overflow: hidden;
+  }
+  /* grid of relic cards */
+  .ri-grid {
+    flex: 1; overflow-y: auto;
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    align-content: start;
+  }
+  .ri-grid::-webkit-scrollbar { width: 6px; }
+  .ri-grid::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+  .ri-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 10px;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+    text-align: center;
+    position: relative;
+  }
+  .ri-card:hover {
+    border-color: var(--gold-dim);
+    box-shadow: 0 4px 16px rgba(200,155,60,0.1);
+    transform: translateY(-1px);
+  }
+  .ri-card.active {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 1px var(--gold), 0 4px 20px rgba(200,155,60,0.2) !important;
+  }
+  .ri-card.epic        { border-color: var(--epic-border); }
+  .ri-card.rare        { border-color: var(--rare-border); }
+  .ri-card.common      { border-color: var(--common-border); }
+  .ri-card.consumable  { border-color: var(--consumable-border); }
+  .ri-card-icon {
+    width: 72px; height: 72px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ri-card-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .ri-card-icon-placeholder { font-size: 30px; opacity: 0.3; }
+  .ri-card-name {
+    font-family: 'Rajdhani', sans-serif; font-weight: 600;
+    font-size: 12px; line-height: 1.3;
+    color: var(--text);
+  }
+  .ri-card-tier-dot {
+    position: absolute; top: 8px; right: 8px;
+    width: 7px; height: 7px; border-radius: 50%;
+  }
+  .ri-card-uses {
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.05);
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .ri-card.epic   .ri-card-uses { color: var(--epic);   background: var(--epic-bg); }
+  .ri-card.rare   .ri-card-uses { color: var(--rare);   background: var(--rare-bg); }
+  .ri-card.common .ri-card-uses { color: var(--common); background: var(--common-bg); }
+  .ri-card.consumable .ri-card-uses { color: var(--consumable); background: var(--consumable-bg); }
+
+  /* relic detail side panel */
+  .ri-detail-panel {
+    width: 380px; flex-shrink: 0;
+    border-left: 1px solid var(--border-gold);
+    overflow-y: auto;
+    padding: 24px 20px;
+    background: rgba(0,0,0,0.2);
+  }
+  .ri-detail-panel::-webkit-scrollbar { width: 6px; }
+  .ri-detail-panel::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+  .ri-detail-empty {
+    height: 100%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    color: var(--text-dim); font-family: 'Exo 2', sans-serif;
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+  }
+  .ri-detail-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 16px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-gold);
+  }
+  .ri-detail-icon {
+    width: 80px; height: 80px; flex-shrink: 0;
+  }
+  .ri-detail-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .ri-detail-name {
+    font-family: 'Rajdhani', sans-serif; font-weight: 700;
+    font-size: 18px; line-height: 1.2;
+  }
+  .ri-detail-meta {
+    display: flex; align-items: center; gap: 6px; margin-top: 4px;
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim);
+  }
+  .ri-detail-desc {
+    font-family: 'Exo 2', sans-serif; font-size: 13px;
+    color: var(--text); line-height: 1.6; margin-bottom: 12px;
+  }
+  .ri-detail-source {
+    font-family: 'Exo 2', sans-serif; font-size: 12px;
+    color: var(--gold-dim); line-height: 1.5;
+    border-top: 1px solid var(--border); padding-top: 10px; margin-bottom: 16px;
+  }
+  .ri-detail-source b { color: var(--gold); }
+  .ri-detail-builds-title {
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 10px;
+  }
+  .ri-build-row {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; margin-bottom: 8px;
+    animation: fadeIn 0.25s ease forwards; opacity: 0;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .ri-build-row:hover {
+    border-color: var(--gold-dim);
+    box-shadow: 0 2px 12px rgba(200,155,60,0.1);
+  }
+  .ri-build-champ {
+    font-family: 'Rajdhani', sans-serif; font-weight: 700;
+    font-size: 14px; color: var(--gold); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ri-build-champ img {
+    width: 24px; height: 24px; border-radius: 50%;
+    object-fit: cover; border: 1px solid var(--border-gold);
+  }
+  .ri-build-relics {
+    display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px;
+  }
+  .ri-build-star {
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    color: var(--gold); background: rgba(200,155,60,0.08);
+    border: 1px solid rgba(200,155,60,0.2);
+    padding: 2px 8px; border-radius: 10px; display: inline-block;
+    margin-bottom: 5px;
+  }
+  .ri-build-players {
+    display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+  }
+  .ri-build-players-label {
+    font-family: 'Exo 2', sans-serif; font-size: 10px;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     TIER LIST PANEL
+  ══════════════════════════════════════════════════════ */
+  .tl-root {
+    flex: 1; display: flex; min-height: 0;
+    overflow: hidden;
+    background: var(--bg-deep);
+  }
+
+  /* Sidebar */
+  .tl-sidebar {
+    width: 230px; flex-shrink: 0;
+    border-right: 1px solid var(--border-gold);
+    background: rgba(0,0,0,0.3);
+    overflow-y: auto; padding: 12px 10px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .tl-sidebar::-webkit-scrollbar { width: 4px; }
+  .tl-sidebar::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius:2px; }
+  .tl-sidebar-section { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+  .tl-section-title {
+    font-family:'Exo 2',sans-serif; font-size:10px;
+    letter-spacing:2px; text-transform:uppercase;
+    color: var(--gold-dim); padding: 4px 0 2px;
+    border-bottom:1px solid var(--border); margin-bottom:4px;
+  }
+  .tl-preset-btn {
+    display:flex; align-items:center; gap:10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius:8px; padding:8px 10px;
+    cursor:pointer; text-align:left; width:100%;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .tl-preset-btn:hover { border-color: var(--gold-dim); background: rgba(200,155,60,0.06); }
+  .tl-preset-btn.active { border-color: var(--gold); background: rgba(200,155,60,0.1); }
+  .tl-preset-icon { font-size:20px; flex-shrink:0; }
+  .tl-preset-name { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:13px; color:var(--text); }
+  .tl-preset-desc { font-family:'Exo 2',sans-serif; font-size:10px; color:var(--text-dim); margin-top:1px; }
+  .tl-label { font-family:'Exo 2',sans-serif; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); }
+  .tl-toggle-group { display:flex; gap:4px; }
+  .tl-toggle {
+    flex:1; padding:5px 4px; font-family:'Exo 2',sans-serif; font-size:10px;
+    letter-spacing:0.5px; text-transform:uppercase;
+    background:rgba(255,255,255,0.04); border:1px solid var(--border);
+    color:var(--text-dim); border-radius:5px; cursor:pointer;
+    transition: all 0.15s;
+  }
+  .tl-toggle:hover { color:var(--text); border-color:var(--border-gold); }
+  .tl-toggle.active { background:rgba(200,155,60,0.15); border-color:var(--gold-dim); color:var(--gold); }
+  .tl-action-btn {
+    width:100%; padding:7px 10px;
+    font-family:'Exo 2',sans-serif; font-size:11px; letter-spacing:1px; text-transform:uppercase;
+    background:rgba(255,255,255,0.04); border:1px solid var(--border);
+    color:var(--text-dim); border-radius:6px; cursor:pointer;
+    transition: all 0.15s; text-align:left;
+  }
+  .tl-action-btn:hover { color:var(--text); border-color:var(--border-gold); background:rgba(255,255,255,0.07); }
+  .tl-action-btn.gold { border-color:var(--gold-dim); color:var(--gold); background:rgba(200,155,60,0.08); }
+  .tl-action-btn.gold:hover { background:rgba(200,155,60,0.15); }
+
+  /* Main area */
+  .tl-main {
+    flex:1; display:flex; flex-direction:column;
+    min-height:0; overflow-y:auto; padding:16px 20px;
+  }
+  .tl-main::-webkit-scrollbar { width:6px; }
+  .tl-main::-webkit-scrollbar-thumb { background:var(--border-gold); border-radius:3px; }
+
+  .tl-title-bar {
+    display:flex; align-items:center; gap:16px;
+    margin-bottom:16px; flex-shrink:0;
+  }
+  .tl-title-input {
+    font-family:'Cinzel Decorative',serif; font-size:18px; color:var(--gold);
+    background:none; border:none; border-bottom:1px solid var(--border-gold);
+    outline:none; padding:4px 0; flex:1; max-width:400px;
+  }
+  .tl-title-input:focus { border-bottom-color:var(--gold); }
+  .tl-title-hint { font-family:'Exo 2',sans-serif; font-size:10px; color:var(--text-dim); letter-spacing:1px; }
+
+  /* Tier rows */
+  .tl-tiers { display:flex; flex-direction:column; gap:3px; flex-shrink:0; }
+  .tl-tier {
+    display:flex; align-items:stretch; min-height:72px;
+    border-radius:6px; overflow:visible;
+    border:1px solid rgba(255,255,255,0.06);
+    position:relative;
+  }
+  .tl-tier.drag-over .tl-tier-items { background:rgba(200,155,60,0.1); outline:2px dashed var(--gold-dim); }
+
+  .tl-tier-label-wrap {
+    width:90px; flex-shrink:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; position:relative;
+    border-right:1px solid rgba(255,255,255,0.08);
+    cursor:pointer; user-select:none;
+    padding:4px;
+  }
+  .tl-tier-label {
+    font-family:'Rajdhani',sans-serif; font-weight:700; font-size:18px;
+    text-align:center; line-height:1.2; word-break:break-word;
+    width:100%; padding:2px 4px; border-radius:4px;
+    background:none; border:none; color:inherit; cursor:pointer;
+    text-align:center; resize:none; outline:none; font-size:15px;
+  }
+  .tl-tier-label:focus { background:rgba(0,0,0,0.3); }
+  .tl-tier-ctrl {
+    display:none; position:absolute; right:2px; top:2px;
+    flex-direction:column; gap:2px;
+  }
+  .tl-tier:hover .tl-tier-ctrl { display:flex; }
+  .tl-tier-ctrl button {
+    background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1);
+    color:var(--text-dim); border-radius:3px; width:18px; height:18px;
+    font-size:9px; cursor:pointer; padding:0; line-height:1;
+    transition:color 0.1s;
+  }
+  .tl-tier-ctrl button:hover { color:var(--text); }
+
+  .tl-tier-items {
+    flex:1; display:flex; flex-wrap:wrap;
+    align-items:center; gap:6px; padding:6px 8px;
+    min-height:72px; border-radius:0 6px 6px 0;
+    transition:background 0.15s;
+  }
+
+  /* Items (chips) inside tiers */
+  .tl-item {
+    display:flex; flex-direction:column; align-items:center;
+    width:64px; cursor:grab; border-radius:8px;
+    padding:5px 4px 4px; gap:4px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    transition: transform 0.1s, box-shadow 0.1s, border-color 0.15s;
+    user-select:none; position:relative; flex-shrink:0;
+  }
+  .tl-item:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.5); }
+  .tl-item.dragging { opacity:0.4; transform:scale(0.95); }
+  .tl-item.drag-target { border-color:var(--gold); box-shadow:0 0 8px rgba(200,155,60,0.4); }
+  .tl-item img { width:44px; height:44px; object-fit:contain; border-radius:50%; display:block; }
+  .tl-item .tl-item-img-relic { border-radius:6px; }
+  .tl-item-name {
+    font-family:'Rajdhani',sans-serif; font-size:9px; font-weight:600;
+    color:var(--text); text-align:center; line-height:1.2;
+    word-break:break-word; max-width:62px;
+  }
+  .tl-item-dot {
+    position:absolute; top:3px; right:3px;
+    width:6px; height:6px; border-radius:50%;
+  }
+
+  /* Tier color swatch on label */
+  .tl-tier[data-color="S"]  .tl-tier-label-wrap { background:#ff7f7f22; color:#ff7f7f; }
+  .tl-tier[data-color="A"]  .tl-tier-label-wrap { background:#ffbf7f22; color:#ffbf7f; }
+  .tl-tier[data-color="B"]  .tl-tier-label-wrap { background:#ffdf7f22; color:#ffdf7f; }
+  .tl-tier[data-color="C"]  .tl-tier-label-wrap { background:#7fff7f22; color:#7fff7f; }
+  .tl-tier[data-color="D"]  .tl-tier-label-wrap { background:#7fbfff22; color:#7fbfff; }
+  .tl-tier[data-color="F"]  .tl-tier-label-wrap { background:#bf7fff22; color:#bf7fff; }
+  .tl-tier[data-color="custom1"] .tl-tier-label-wrap { background:rgba(200,155,60,0.15); color:var(--gold); }
+
+  /* Unranked pool */
+  .tl-unranked-section { margin-top:12px; flex-shrink:0; }
+  .tl-unranked-label {
+    font-family:'Exo 2',sans-serif; font-size:10px; letter-spacing:2px;
+    text-transform:uppercase; color:var(--text-dim);
+    margin-bottom:8px; padding-bottom:6px;
+    border-bottom:1px solid var(--border);
+  }
+  .tl-unranked-pool {
+    display:flex; flex-wrap:wrap; gap:6px;
+    min-height:80px; padding:8px;
+    background:rgba(255,255,255,0.02);
+    border:1px dashed var(--border); border-radius:8px;
+    transition:background 0.15s;
+  }
+  .tl-unranked-pool.drag-over { background:rgba(200,155,60,0.07); border-color:var(--gold-dim); }
+
+  /* Color picker row for tier label */
+  .tl-color-row {
+    display:flex; gap:4px; margin-top:4px; flex-wrap:wrap;
+    justify-content:center;
+  }
+  .tl-color-swatch {
+    width:14px; height:14px; border-radius:50%;
+    cursor:pointer; border:2px solid transparent;
+    transition:border-color 0.1s;
+  }
+  .tl-color-swatch:hover { border-color:#fff; }
+
+
+  .tl-tier-sublabel {
+    font-family:'Exo 2',sans-serif; font-size:9px;
+    letter-spacing:0.5px; opacity:0.7;
+    text-align:center; line-height:1.3;
+    padding: 0 4px; margin-top:2px;
+    word-break:break-word;
+  }
+
+  .tl-description-banner {
+    font-family:'Exo 2',sans-serif; font-size:12px;
+    color: var(--text-dim); line-height:1.6;
+    background: rgba(200,155,60,0.05);
+    border: 1px solid var(--border-gold);
+    border-radius:8px; padding:10px 16px;
+    margin-bottom:14px; flex-shrink:0;
+    letter-spacing:0.3px;
+  }
+</style>
+</head>
+<body>
+<div id="relicTooltip"></div>
+
+<header>
+  <div class="header-rune">🔮</div>
+  <div>
+    <h1>Relic Explorer</h1>
+    <p>Legends of Runeterra · Path of Champions</p>
+  </div>
+  <div class="header-right">
+    <span class="relic-filter-label">🔮 Filter by Relic</span>
+    <!-- Active pills -->
+    <div class="relic-pills-row" id="relicPillsRow"></div>
+    <!-- Single search input — hidden when 3 relics chosen -->
+    <div class="relic-input-wrap" id="relicInputWrap">
+      <span class="relic-input-search-icon">🔍</span>
+      <input type="text" id="relicSearchInput" placeholder="Add relic…" autocomplete="off" oninput="onRelicInput()">
+      <button class="relic-input-clear" id="relicInputClear" onclick="clearRelicInput()">✕</button>
+    </div>
+  </div>
+</header>
+<!-- Autocomplete at body level to avoid any clipping -->
+<div class="relic-autocomplete" id="relicAC"></div>
+
+<div class="top-nav">
+  <button class="tab-btn active" id="tabChampions" onclick="switchTab('champions')">⚔️ Champions</button>
+  <button class="tab-btn" id="tabRelics" onclick="switchTab('relics')">💎 Relic Index</button>
+  <button class="tab-btn" id="tabTierlist" onclick="switchTab('tierlist')">📊 Tier List</button>
+</div>
+
+<div class="main-wrapper">
+<div class="main">
+  <div class="sidebar">
+    <div class="drum-search-wrap">
+      <span class="drum-search-icon">🔍</span>
+      <input type="text" id="searchBox" placeholder="Filter champions…" oninput="onSearch()">
+      <button class="drum-search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+    </div>
+
+    <div class="drum-container" id="drumContainer">
+      <div class="drum-viewport" id="drumViewport">
+        <div class="drum-track" id="drumTrack"></div>
+      </div>
+    </div>
+
+    <div class="drum-nav">
+      <button onclick="step(-1)" title="Previous">▲</button>
+      <button onclick="step(1)"  title="Next">▼</button>
+    </div>
+  </div>
+
+  <div class="detail-column">
+    <div class="detail" id="detail">
+      <div class="detail-empty">
+        <div class="big-icon">⚔️</div>
+        <div>Select a champion to view builds</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+
+<!-- Relic index keyword popup -->
+<div id="riKwPopup" class="ri-kw-popup"></div>
+
+<!-- ── RELIC INDEX PANEL ── -->
+<div id="relicIndexPanel" style="display:none;" class="relic-index-root">
+  <div class="ri-toolbar">
+    <div class="ri-tier-filters">
+      <button class="ri-tier-btn active" data-tier="all" onclick="riSetTier('all')">All</button>
+      <button class="ri-tier-btn" data-tier="epic" onclick="riSetTier('epic')"><span class="ri-dot epic"></span>Epic</button>
+      <button class="ri-tier-btn" data-tier="rare" onclick="riSetTier('rare')"><span class="ri-dot rare"></span>Rare</button>
+      <button class="ri-tier-btn" data-tier="common" onclick="riSetTier('common')"><span class="ri-dot common"></span>Common</button>
+      <button class="ri-tier-btn" data-tier="consumable" onclick="riSetTier('consumable')"><span class="ri-dot consumable"></span>Consumable</button>
+    </div>
+    <div class="ri-search-wrap" id="riSearchWrap">
+      <span class="ri-search-icon">🔍</span>
+      <input type="text" id="riSearch" placeholder="Search relics…" autocomplete="off" oninput="riOnSearch()">
+      <button class="ri-search-clear" id="riSearchClear" onclick="riClearSearch()">✕</button>
+    </div>
+    <div class="ri-autocomplete" id="riAC"></div>
+    <div class="ri-sort-wrap">
+      <span class="ri-sort-label">Sort:</span>
+      <select id="riSort" onchange="riRender()">
+        <option value="uses">Most Used</option>
+        <option value="name">Name A–Z</option>
+        <option value="tier">By Tier</option>
+      </select>
+    </div>
+    <div class="ri-count" id="riCount"></div>
+  </div>
+  <div class="ri-body">
+    <div class="ri-grid" id="riGrid"></div>
+    <div class="ri-detail-panel" id="riDetailPanel">
+      <div class="ri-detail-empty">
+        <div style="font-size:48px;opacity:0.15;">💎</div>
+        <div>Click a relic to see builds</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── TIER LIST PANEL ── -->
+<div id="tierlistPanel" style="display:none;" class="tl-root">
+
+  <!-- Left sidebar: controls -->
+  <div class="tl-sidebar">
+    <div class="tl-sidebar-section">
+      <div class="tl-section-title">⚡ Auto Tier Lists</div>
+      <button class="tl-preset-btn active" data-preset="relic-usage" onclick="tlLoadPreset('relic-usage')">
+        <span class="tl-preset-icon">💎</span>
+        <div><div class="tl-preset-name">Relic Usage</div><div class="tl-preset-desc">Most used in builds → top</div></div>
+      </button>
+      <button class="tl-preset-btn" data-preset="relic-diversity" onclick="tlLoadPreset('relic-diversity')">
+        <span class="tl-preset-icon">🌈</span>
+        <div><div class="tl-preset-name">Relic Diversity</div><div class="tl-preset-desc">Used across more champions → top</div></div>
+      </button>
+      <button class="tl-preset-btn" data-preset="champ-diversity" onclick="tlLoadPreset('champ-diversity')">
+        <span class="tl-preset-icon">⚔️</span>
+        <div><div class="tl-preset-name">Champion Builds</div><div class="tl-preset-desc">Most recorded builds → top</div></div>
+      </button>
+    </div>
+
+    <div class="tl-sidebar-section">
+      <div class="tl-section-title">🎨 Customize</div>
+      <div class="tl-label">Show items</div>
+      <div class="tl-toggle-group">
+        <button class="tl-toggle active" id="tlShowRelics" onclick="tlToggleShow('relics')">Relics</button>
+        <button class="tl-toggle" id="tlShowChamps" onclick="tlToggleShow('champs')">Champions</button>
+      </div>
+      <div id="tlRelicFilterRow">
+      <div class="tl-label" style="margin-top:12px;">Relic tiers</div>
+      <div class="tl-toggle-group" style="flex-wrap:wrap;gap:4px;">
+        <button class="tl-toggle active" id="tlFilterEpic" onclick="tlToggleFilter('epic')">Epic</button>
+        <button class="tl-toggle active" id="tlFilterRare" onclick="tlToggleFilter('rare')">Rare</button>
+        <button class="tl-toggle active" id="tlFilterCommon" onclick="tlToggleFilter('common')">Common</button>
+        <button class="tl-toggle" id="tlFilterConsumable" onclick="tlToggleFilter('consumable')">Consumable</button>
+      </div>
+      </div><!-- end tlRelicFilterRow -->
+    </div>
+
+    <div class="tl-sidebar-section">
+      <div class="tl-section-title">🏗 Tier Controls</div>
+      <button class="tl-action-btn" onclick="tlAddTier()">＋ Add Tier</button>
+      <button class="tl-action-btn" onclick="tlResetTiers()">↺ Reset Tiers</button>
+      <button class="tl-action-btn" onclick="tlClearAll()">🗑 Clear All Items</button>
+      <button class="tl-action-btn gold" onclick="tlAutoFill()">✨ Auto-Fill</button>
+    </div>
+
+    <div class="tl-sidebar-section">
+      <div class="tl-section-title">💾 Export</div>
+      <button class="tl-action-btn" onclick="tlExportImage()">📷 Save as Image</button>
+    </div>
+  </div>
+
+  <!-- Main tier list area -->
+  <div class="tl-main">
+    <div class="tl-title-bar">
+      <input class="tl-title-input" id="tlTitleInput" value="Relic Usage Tier List" />
+      <span class="tl-title-hint">click tier labels to rename · drag items between tiers</span>
+    </div>
+    <div class="tl-description-banner" id="tlDescription">
+      Ranks every relic by how many times it appears across all recorded builds. A relic in the top tier is picked constantly — one at the bottom is rarely or never used.
+    </div>
+    <div class="tl-tiers" id="tlTiers"></div>
+    <div class="tl-unranked-section">
+      <div class="tl-unranked-label">📦 Unranked Pool — drag items into tiers above</div>
+      <div class="tl-unranked-pool" id="tlUnranked"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Player Drawer -->
+<div id="playerDrawerOverlay" onclick="closePlayerDrawer()"></div>
+<div id="playerDrawer">
+  <div class="pd-header">
+    <div class="pd-header-text">
+      <div class="pd-title" id="pdPlayerName"></div>
+      <div class="pd-subtitle" id="pdBuildCount"></div>
+    </div>
+    <button class="pd-close" onclick="closePlayerDrawer()" title="Close">✕</button>
+  </div>
+  <div class="pd-body" id="pdBody"></div>
+</div>
+
+<script src="builds.js">
+
+</script>
+<script src="relics.js">
+
+</script>
+<script src="keywords.js">
+
+</script>
+<script>
+
+// ── DATA ─────────────────────────────────────────────────────────────
+// ── RELIC TIER ───────────────────────────────────────────────────────
+// ── RELIC DATABASE ───────────────────────────────────────────────────
+// Full relic info: tier, accurate description, source where applicable.
+// Tiers: 'common' (green) | 'rare' (blue) | 'epic' (purple)
+// Note: Epic Relics can't have duplicates and have duplicate protection
+//       when opening Gold Reliquaries.
+//
+// ── SOURCES REFERENCE ────────────────────────────────────────────────
+// COSMIC VAULTS:
+//   Bronze  — 95%:5frags / 5%:10frags | No relic | No bonus
+//            Sources: Winning 2★ or lower adventures, Champion Campaigns,
+//                     Daily Quest Victory!, Emporium (Shards)
+//   Silver  — 90%:10frags / 10%:15frags | No relic | No bonus
+//            Sources: Adventure Rewards, Completing Quests,
+//                     Weekly Quest "Call of the Adventure", Legend Lv7 Reward
+//   Gold    — 90%:20frags / 10%:20+10frags | 30% Random Common Relic | No bonus
+//            Sources: Adventure Rewards, Completing Quests, Legend Level Rewards,
+//                     Weekly Quest "Portal Warrior", Emporium (Shards)
+//   Platinum— 60%:40frags / 30%:20+20frags / 10%:30+20frags | 30% Random Rare Relic
+//            Sources: Completing The Path Ch.V and VI,
+//                     Glory Store (up to 5/month for 20 Glory), Legend Level Rewards
+//   Diamond — 75%:40+40frags / 20%:40+40+40frags / 5%:80+80+80frags
+//             Wild: 85%:20 / 14%:50 / 1%:100
+//             Relic: 65% Greater Cosmic Blessing / 35% Random Rare Relic
+//             Bonus: 20%:10 Fire / 5%:150 Coins
+//            Sources: Achievement Quests, Event Quests, Legend Level Rewards
+//   Gold/Platinum/Diamond Vaults have Duplicate Protection.
+//   Spirit Blossom Fragments/currency cannot appear in any Vault.
+//
+// RELIQUARIES:
+//   Bronze Reliquary — 90% Common Relic / 10% Rare Relic | No Spirit Forge
+//            Sources: Adventure Rewards, Completing Quests
+//   Silver Reliquary — 100% Rare Relic | No Spirit Forge
+//            Sources: Adventure Rewards, Completing Quests,
+//                     Legend Level Rewards, Glory Store (up to 5/month for 20 Glory)
+//   Gold Reliquary   — 100% Epic Relic (Duplicate Protection) | Spirit Forge if own all epics
+//            Sources: Emporium, The Frost Witch's 5th reward, Legend Level Rewards
+//   Duplicate Protection: guarantees no already-owned relics.
+//            If player owns all epics → rewards Spirit Forge + 50 Targon Gemstones instead.
+// ─────────────────────────────────────────────────────────────────────
+
+
+
+// ── ACQUIRING COSMIC VAULTS ──────────────────────────────────────────
+// Cosmic Vault = main method of acquiring Champion Fragments.
+// Free sources:
+//   - Reaching LoR/event milestones
+//   - PoC quests: Daily→Bronze, Weekly→Silver, Path quests→Platinum+Gold
+//   - Completing Adventures (almost every adventure rewards a vault)
+//   - Winning one of the 3 Weekly Adventures → Silver Vault
+//   - Up to 5 Platinum Vaults/month in Glory Store for 50 Glory each
+//   - Legend Levels (before Lv30): Gold at 14,17,23,25,28; Platinum at 19,30
+//   - Legend Levels (Lv30-50): ends in 1,2,4,5,7,8 → Gold; ends in 3,6,9 → Platinum
+//   - Battle Pass (some rewards premium-only)
+// Duplicate Protection (Gold/Platinum/Diamond vaults):
+//   - Prioritizes fragments for champions not yet fully upgraded
+//   - Gold: prioritizes champions needing 20+ fragments to fully upgrade
+//   - Platinum/Diamond: prioritizes champions that can be fully upgraded with the drop
+//   - Stardust still granted from duplicate Relics (relics not protected)
+//
+// ── ACQUIRING RELIQUARIES ────────────────────────────────────────────
+// Free sources:
+//   - PoC quests: Weekly Quest→Bronze, Path Quests→many Silver
+//   - Completing Adventures
+//   - The Frost Witch's 5th reward → Gold Reliquary (only adventure to give Gold)
+//   - Winning 2 of the 3 Weekly Adventures → 1 Silver + 1 Bronze Reliquary
+//   - Up to 5 Silver Reliquaries/month in Glory Store for 10 Glory each
+//   - Legend Levels: Silver at 12, 22, 26; Gold at 40, 50
+//   - Battle Pass (some rewards premium-only)
+// Duplicate Protection (Gold Reliquary only):
+//   - Guarantees no already-owned epic relics
+//   - If player owns ALL epics → receives Spirit Forge + 50 Targon Gemstones instead
+
+
+
+function getRelicTier(name) {
+  return RELIC_DB[name]?.tier || 'common';
+}
+
+// ── KEYWORD HELPERS ───────────────────────────────────────────────────
+
+// Returns array of {key, data} for all keywords found in a description string.
+function getRelicKeywords(desc) {
+  if (!desc || typeof KEYWORD_DB === 'undefined') return [];
+  const found = [];
+  const seen  = new Set();
+  for (const [kw, data] of Object.entries(KEYWORD_DB)) {
+    const pattern = new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`, 'i');
+    if (pattern.test(desc) && !seen.has(kw.toLowerCase())) {
+      found.push({ key: kw, data });
+      seen.add(kw.toLowerCase());
+    }
+  }
+  return found;
+}
+
+// Wraps each recognised keyword in desc with a gold <span>.
+function highlightKeywords(desc) {
+  if (!desc || typeof KEYWORD_DB === 'undefined') return desc;
+  let result = desc;
+  for (const [kw] of Object.entries(KEYWORD_DB)) {
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const pattern = new RegExp(`\\b(${escaped})\\b`, 'gi');
+    result = result.replace(pattern, '<span class="kw-highlight">$1</span>');
+  }
+  return result;
+}
+
+function buildRelicTooltipHTML(name, info) {
+  if (!info || !info.desc) return '';
+
+  const tier      = info.tier || 'common';
+  const subtype   = info.subtype || '';
+  const isConsumable = tier === 'consumable';
+
+  const tierColors = {
+    epic: 'var(--epic)', rare: 'var(--rare)',
+    common: 'var(--common)', consumable: 'var(--consumable)'
+  };
+  const tierColor = tierColors[tier] || tierColors.common;
+
+  let tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1);
+  if (subtype === 'signature') tierLabel += ' · Signature';
+  else if (subtype === 'general') tierLabel += ' · General';
+  if (isConsumable && info.rarity) {
+    tierLabel = info.rarity.charAt(0).toUpperCase() + info.rarity.slice(1) + ' Consumable';
+  }
+
+  let html = '';
+
+  // Icon layout: big icon on left, name+tier on right
+  if (info.icon) {
+    html += `<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+      <div style="
+        flex-shrink:0;
+        width:110px;height:110px;
+        position:relative;
+      ">
+        <img src="${info.icon}" style="width:100%;height:100%;object-fit:contain;display:block;" alt="${name}">
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="rtt-name" style="color:${tierColor};font-size:26px;">${name}</div>
+        <div class="rtt-tier-row" style="margin-bottom:0;margin-top:4px;"><div class="rtt-tier-dot" style="background:${tierColor};width:8px;height:8px;box-shadow:0 0 5px ${tierColor};"></div>${tierLabel}</div>
+      </div>
+    </div>`;
+  } else {
+    html += `<div class="rtt-name" style="color:${tierColor}">${name}</div>`;
+    html += `<div class="rtt-tier-row"><div class="rtt-tier-dot" style="background:${tierColor}"></div>${tierLabel}</div>`;
+  }
+
+  html += `<div class="rtt-desc">${highlightKeywords(info.desc)}</div>`;
+
+  // ── Keyword glossary ──
+  const foundKws = getRelicKeywords(info.desc);
+  if (foundKws.length > 0) {
+    html += `<div class="rtt-keywords">
+      <div class="rtt-keywords-title">Keywords</div>`;
+    for (const { key, data } of foundKws) {
+      html += `<div class="rtt-kw-row">
+        <div class="rtt-kw-icon">${data.icon}</div>
+        <div class="rtt-kw-body">
+          <div class="rtt-kw-name">${key}</div>
+          <div class="rtt-kw-desc">${data.desc}</div>
+        </div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  if (info.champion && subtype === 'signature') {
+    html += `<div class="rtt-champion">Signature relic for <b>${info.champion}</b></div>`;
+  }
+
+  if (info.source) {
+    html += `<div class="rtt-source"><b>📦 How to get:</b> ${info.source}</div>`;
+  } else if (subtype === 'signature') {
+    html += `<div class="rtt-source"><b>📦 How to get:</b> Champion Bundle · Glory Store (600 Glory, ~6 months after release)</div>`;
+  } else if (tier === 'epic' && subtype === 'general') {
+    html += `<div class="rtt-source"><b>📦 How to get:</b> Gold Reliquary (with duplicate protection) · Silver/Bronze Reliquary (rare chance)</div>`;
+  } else if (tier === 'rare') {
+    html += `<div class="rtt-source"><b>📦 How to get:</b> Bronze Reliquary (10%) · Silver Reliquary · Gold Vault (30% chance)</div>`;
+  } else if (tier === 'common') {
+    html += `<div class="rtt-source"><b>📦 How to get:</b> Bronze Reliquary (90%) · Gold Vault (30% chance)</div>`;
+  }
+
+  if (info.gloryStore) {
+    html += `<div class="rtt-glory">🏆 Glory Store: ${info.gloryStore}</div>`;
+  }
+
+  if (isConsumable) {
+    html += `<div class="rtt-consumable-note">⚗️ Consumable — Removed after Quest completion. No copy limit.</div>`;
+  }
+
+  return html;
+}
+
+// ── CHAMPION CONFIG ──────────────────────────────────────────────────
+const CHAMP_MAP = {
+  "Aatrox":"Aatrox","Ahri":"Ahri","Akshan":"Akshan","Ambessa":"Ambessa","Anivia":"Anivia",
+  "Annie":"Annie","Ashe":"Ashe","Aurelion Sol":"AurelionSol","Azir":"Azir","Caitlyn":"Caitlyn",
+  "Darius":"Darius","Diana":"Diana","Ekko":"Ekko","Elder Dragon":null,"Elise":"Elise",
+  "Evelynn":"Evelynn","Fiddlesticks":"Fiddlesticks","Garen":"Garen","Gwen":"Gwen","Heimerdinger":"Heimerdinger",
+  "Jack":null,"Jayce":"Jayce","Jhin":"Jhin","Jinx":"Jinx","Kai'Sa":"Kaisa","Kayle":"Kayle",
+  "LeBlanc":"Leblanc","Leona":"Leona","Lillia":"Lillia","Lux":"Lux","Lux: Illuminated":null,
+  "Master Yi":"MasterYi","Mel":"Mel","Miss Fortune":"MissFortune","Mordekaiser":"Mordekaiser",
+  "Morgana":"Morgana","Nasus":"Nasus","Nautilus":"Nautilus",
+  "Neeko":"Neeko","Norra":null,"Nunu & Willump":"Nunu","Ornn":"Ornn","Pyke":"Pyke","Samira":"Samira",
+  "Sett":"Sett","Shyvana":"Shyvana","Soraka":"Soraka","Spirit Blossom Ahri":"Ahri",
+  "Spirit Blossom Evelynn":"Evelynn","Spirit Blossom Kindred":"Kindred",
+  "Spirit Blossom Master Yi":"MasterYi","Spirit Blossom Teemo":"Teemo",
+  "Spirit Blossom Yasuo":"Yasuo","Swain":"Swain","Taliyah":"Taliyah","Teemo":"Teemo",
+  "The Poro King":null,"Thresh":"Thresh","Tryndamere":"Tryndamere","Twisted Fate":"TwistedFate",
+  "Udyr":"Udyr","Vayne":"Vayne","Vex":"Vex","Vi":"Vi","Viego":"Viego","Viktor":"Viktor",
+  "Volibear":"Volibear","Warwick":"Warwick","Yasuo":"Yasuo","Yuumi":"Yuumi",
+};
+
+const EMOJI_FALLBACK = {"Elder Dragon":"🐉","Lux: Illuminated":"🌟","Norra":"🐀","The Poro King":"👑","Jack":"🃏"};
+const DDV = "16.7.1";
+
+// LoR-exclusive champions — no DDragon equivalent, use local icons folder
+const LOR_EXCLUSIVE_IMG = {
+  "Elder Dragon":    "icons/champions/Elder Dragon.png",
+  "Norra":           "icons/champions/Norra.png",
+  "Lux: Illuminated":"icons/champions/Lux Illuminated.png",
+  "The Poro King":   "icons/champions/The Poro King.png",
+  "Jack":            "icons/champions/Jack.png"
+};
+
+function champImg(name) {
+  if (LOR_EXCLUSIVE_IMG[name]) return LOR_EXCLUSIVE_IMG[name];
+  const key = CHAMP_MAP[name];
+  if (!key) return null;
+  return `https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${key}.png`;
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────
+const allChampions = [...new Set(rawData.map(d => d.champion))].sort();
+let filtered   = [...allChampions];
+let currentIdx = 0;
+
+const ITEM_H     = 58;
+const SNAP_SLOT  = 4;          // active item sits in this slot (0-based) — must equal POOL_ABOVE
+const POOL_ABOVE = 4;          // rows above the snap slot
+const POOL_BELOW = 10;         // rows below the snap slot
+const POOL_SIZE  = POOL_ABOVE + 1 + POOL_BELOW;
+const SNAP_Y     = SNAP_SLOT * ITEM_H; // px from top of viewport to active row top
+
+let trackOffset  = 0;
+let isAnimating  = false;
+
+// ── DOM ───────────────────────────────────────────────────────────────
+const viewport  = document.getElementById('drumViewport');
+const track     = document.getElementById('drumTrack');
+
+function wrap(i, n) { return ((i % n) + n) % n; }
+
+// ── BUILD POOL (once) ─────────────────────────────────────────────────
+function buildPool() {
+  track.innerHTML = '';
+  for (let i = 0; i < POOL_SIZE; i++) {
+    const slot = i;
+    const row  = document.createElement('div');
+    row.className = 'drum-item';
+
+    const img  = document.createElement('img');
+    img.className = 'champ-img';
+    img.addEventListener('error', () => {
+      // Only hide img if it's currently supposed to be showing (guard against stale errors)
+      if (img.style.display !== 'none') {
+        img.style.display = 'none';
+        emo.style.display = 'flex';
+      }
+    });
+
+    const emo  = document.createElement('div');
+    emo.className = 'champ-img';
+    emo.style.cssText = 'display:none;align-items:center;justify-content:center;font-size:18px;';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'item-name';
+
+    const cntSpan = document.createElement('span');
+    cntSpan.className = 'champ-count';
+
+    row.append(img, emo, nameSpan, cntSpan);
+    row.addEventListener('click', () => {
+      document.getElementById('searchBox').blur();
+      const delta = slot - POOL_ABOVE;
+      if (delta === 0 || isAnimating) return;
+      // Jump directly to the clicked champion (not just one step)
+      currentIdx = wrap(currentIdx + delta, filtered.length);
+      reposition(false);
+      fillRows();
+      renderDetail(filtered[currentIdx]);
+    });
+    track.appendChild(row);
+  }
+
+  reposition(false);
+  fillRows();
+}
+
+// ── FILL ROWS with current champion data ──────────────────────────────
+function fillRows() {
+  const rows = track.children;
+  for (let i = 0; i < POOL_SIZE; i++) {
+    const ci   = wrap(currentIdx - POOL_ABOVE + i, filtered.length);
+    const name = filtered.length > 0 ? filtered[ci] : '';
+    const cnt  = name ? rawData.filter(d => d.champion === name).length : 0;
+    const src  = name ? champImg(name) : null;
+    const emoji = name ? (EMOJI_FALLBACK[name] || '⚔️') : '';
+
+    const row  = rows[i];
+    const img  = row.querySelector('img.champ-img');
+    const emo  = row.querySelector('div.champ-img');
+    const ns   = row.querySelector('.item-name');
+    const cs   = row.querySelector('.champ-count');
+
+    ns.textContent = name;
+    cs.textContent = name ? String(cnt) : '';
+    row.className  = 'drum-item' + (i === POOL_ABOVE ? ' active' : '');
+
+    if (src) {
+      // Reset emo FIRST so a stale onerror from a previous slot can't re-show it
+      emo.style.display = 'none';
+      img.style.display = '';
+      img.alt = name;
+      // Only update src if it actually changed, to avoid re-triggering onerror
+      if (img.src !== src) img.src = src;
+    } else {
+      img.style.display = 'none';
+      emo.style.display = 'flex';
+      emo.textContent = emoji;
+    }
+  }
+}
+
+// ── POSITION ─────────────────────────────────────────────────────────
+function reposition(animate) {
+  const y = SNAP_Y - POOL_ABOVE * ITEM_H;
+  track.style.transition = animate ? 'transform 0.15s ease' : 'none';
+  track.style.transform  = `translateY(${y}px)`;
+  trackOffset = y;
+}
+
+// ── STEP (arrow / wheel) ──────────────────────────────────────────────
+function step(dir) {
+  if (isAnimating || filtered.length === 0) return;
+  isAnimating = true;
+
+  // Snap active class OFF immediately so no row glows during the slide
+  const rows = track.children;
+  for (let i = 0; i < rows.length; i++) rows[i].classList.remove('active');
+
+  const targetY = trackOffset - dir * ITEM_H;
+  track.style.transition = 'transform 0.12s ease';
+  track.style.transform  = `translateY(${targetY}px)`;
+
+  setTimeout(() => {
+    currentIdx = wrap(currentIdx + dir, filtered.length);
+    reposition(false);
+    fillRows();           // fillRows() re-adds .active to slot POOL_ABOVE
+    renderDetail(filtered[currentIdx]);
+    isAnimating = false;
+  }, 120);
+}
+
+// ── CLICK to jump ─────────────────────────────────────────────────────
+function goTo(newIdx) {
+  if (isAnimating || filtered.length === 0) return;
+  currentIdx = wrap(newIdx, filtered.length);
+  reposition(false);
+  fillRows();
+  renderDetail(filtered[currentIdx]);
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────
+function onSearch() {
+  const box = document.getElementById('searchBox');
+  const wrap = box.closest('.drum-search-wrap');
+  wrap.classList.toggle('has-text', box.value.length > 0);
+  const prev = filtered[currentIdx];
+  recomputeFiltered();
+  if (filtered.length === 0) { fillRows(); return; }
+  const ni = filtered.indexOf(prev);
+  currentIdx = ni >= 0 ? ni : 0;
+  reposition(false);
+  fillRows();
+  renderDetail(filtered[currentIdx]);
+}
+
+function clearSearch() {
+  const box = document.getElementById('searchBox');
+  box.value = '';
+  box.closest('.drum-search-wrap').classList.remove('has-text');
+  box.blur();
+  recomputeFiltered();
+  if (filtered.length === 0) { fillRows(); return; }
+  reposition(false);
+  fillRows();
+  renderDetail(filtered[currentIdx]);
+}
+
+// ── WHEEL ─────────────────────────────────────────────────────────────
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  step(e.deltaY > 0 ? 1 : -1);
+}, { passive: false });
+
+// ── KEYBOARD ──────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); step(1); }
+  if (e.key === 'ArrowUp')   { e.preventDefault(); step(-1); }
+});
+
+// ── DETAIL PANEL ──────────────────────────────────────────────────────
+function renderDetail(name) {
+  const builds = rawData.filter(d => d.champion === name);
+  const detail = document.getElementById('detail');
+  const imgSrc = champImg(name);
+  const emoji  = EMOJI_FALLBACK[name] || '⚔️';
+
+  let imgTag = imgSrc
+    ? `<img class="detail-champ-img" src="${imgSrc}" alt="${name}"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+       <div class="detail-champ-img" style="display:none;align-items:center;justify-content:center;font-size:36px;background:var(--bg-card);">${emoji}</div>`
+    : `<div class="detail-champ-img" style="display:flex;align-items:center;justify-content:center;font-size:36px;background:var(--bg-card);">${emoji}</div>`;
+
+  let html = `
+    <div class="detail-header">
+      ${imgTag}
+      <div>
+        <div class="detail-champ-name">${name}</div>
+        <div class="detail-champ-sub">${builds.length} build${builds.length !== 1 ? 's' : ''} recorded</div>
+      </div>
+    </div>
+    <div class="builds-grid">`;
+
+  builds.forEach((b, i) => {
+    const relics = [b.r1, b.r2, b.r3];
+    // Track how many highlights remain per relic (based on slot counts)
+    const highlightRemaining = {};
+    for (const r of relicSlots) highlightRemaining[r] = (highlightRemaining[r] || 0) + 1;
+
+    const badges = relics.map(r => {
+      const tier = getRelicTier(r);
+      const info = RELIC_DB[r] || {};
+      const ttHTML = buildRelicTooltipHTML(r, info);
+      const escaped = ttHTML.replace(/"/g, '&quot;');
+      let highlight = '';
+      if (highlightRemaining[r] > 0) {
+        highlight = ' filter-match';
+        highlightRemaining[r]--;
+      }
+      return `<div class="relic-badge ${tier}${highlight}" data-tooltip="${escaped}"><div class="relic-dot"></div>${r}</div>`;
+    }).join('');
+    const starMatch = b.star.match(/^([^-]+)(?:-(.+))?$/);
+    const starStr   = starMatch ? starMatch[1].trim() : b.star;
+    const levelStr  = starMatch?.[2] ? starMatch[2].trim() : '';
+    const players   = b.player.split(',').map(p => p.trim()).filter(Boolean);
+    html += `
+      <div class="build-card" data-build-id="${name}::${i}" onclick="selectBuild(this)" style="animation-delay:${i * 0.04}s">
+        <div class="build-top">${badges}</div>
+        <div class="build-bottom">
+          <div class="star-level">⭐ ${starStr}${levelStr ? ` · Lvl ${levelStr}` : ''}</div>
+        </div>
+        <div class="players-row">
+          <span class="players-label">Players: </span>
+          ${players.map(p => `<span class="player-chip" onclick="event.stopPropagation();openPlayerDrawer(this.textContent.trim())">${p}</span>`).join('')}
+        </div>
+      </div>`;
+  });
+  html += `</div>`;
+  detail.innerHTML = html;
+}
+
+// ── RELIC TOOLTIP ENGINE ─────────────────────────────────────────────
+const relicTip = document.getElementById('relicTooltip');
+
+document.addEventListener('mouseover', e => {
+  const badge = e.target.closest('.relic-badge[data-tooltip], .ri-card[data-tooltip]');
+  if (!badge) return;
+  const html = badge.getAttribute('data-tooltip');
+  if (!html) return;
+
+  relicTip.innerHTML = html;
+  relicTip.classList.add('visible');
+  positionTip(badge);
+});
+
+document.addEventListener('mouseout', e => {
+  const badge = e.target.closest('.relic-badge[data-tooltip], .ri-card[data-tooltip]');
+  if (!badge) return;
+  relicTip.classList.remove('visible');
+});
+
+function positionTip(badge) {
+  const r   = badge.getBoundingClientRect();
+  const gap = 10;
+  const vw  = window.innerWidth;
+  const vh  = window.innerHeight;
+
+  // Make visible off-screen first so offsetWidth/Height are correct
+  relicTip.style.top  = '0px';
+  relicTip.style.left = '0px';
+
+  const tw  = relicTip.offsetWidth;
+  const th  = relicTip.offsetHeight;
+
+  // Prefer above, fall back to below
+  let top = r.top - th - gap;
+  if (top < 8) top = r.bottom + gap;
+
+  // If still overflows bottom, pin to bottom edge
+  if (top + th > vh - 8) top = vh - th - 8;
+  // Never go above top edge
+  if (top < 8) top = 8;
+
+  // Center horizontally over badge, clamp to viewport
+  let left = r.left + r.width / 2 - tw / 2;
+  left = Math.max(8, Math.min(left, vw - tw - 8));
+
+  relicTip.style.top  = top  + 'px';
+  relicTip.style.left = left + 'px';
+}
+
+// ── RELIC FILTER STATE ───────────────────────────────────────────────
+// relicSlots is an array of chosen relic names (max 3), position-agnostic.
+// Non-epic relics can appear multiple times (e.g. [Z-Drive, Z-Drive]).
+// Epic relics can only appear once.
+const relicSlots = [];
+
+const allRelics = [...new Set(rawData.flatMap(d => [d.r1, d.r2, d.r3]))].sort();
+const DOT_COLORS = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+
+// Count how many times `relic` appears in a build row
+function countInBuild(d, relic) {
+  return [d.r1, d.r2, d.r3].filter(r => r === relic).length;
+}
+
+// Check if a build row satisfies the current slot list.
+// For each unique relic in slots, the build must have AT LEAST that many copies.
+function buildMatchesSlots(d, slots) {
+  // tally required counts
+  const needed = {};
+  for (const r of slots) needed[r] = (needed[r] || 0) + 1;
+  return Object.entries(needed).every(([r, n]) => countInBuild(d, r) >= n);
+}
+
+// Champions whose builds contain all chosen relics (respecting duplicate counts)
+function champsMatchingSlots() {
+  if (relicSlots.length === 0) return allChampions;
+  return [...new Set(
+    rawData.filter(d => buildMatchesSlots(d, relicSlots)).map(d => d.champion)
+  )].sort();
+}
+
+function recomputeFiltered() {
+  const box = document.getElementById('searchBox');
+  const q = box ? box.value.toLowerCase() : '';
+  filtered = champsMatchingSlots().filter(n => n.toLowerCase().includes(q));
+}
+
+// ── RENDER PILLS ─────────────────────────────────────────────────────
+function renderPills() {
+  const row  = document.getElementById('relicPillsRow');
+  const wrap = document.getElementById('relicInputWrap');
+
+  row.innerHTML = relicSlots.map((r, i) => {
+    const tier = getRelicTier(r);
+    const dc   = DOT_COLORS[tier] || DOT_COLORS.common;
+    return `<div class="relic-slot-pill ${tier}">
+      <div class="relic-slot-pill-dot" style="background:${dc};box-shadow:0 0 4px ${dc}"></div>
+      ${r}
+      <span class="relic-pill-x" onclick="removeRelicSlot(${i})">✕</span>
+    </div>`;
+  }).join('');
+
+  // Hide input when 3 relics chosen
+  wrap.style.display = relicSlots.length >= 3 ? 'none' : '';
+}
+
+function removeRelicSlot(i) {
+  relicSlots.splice(i, 1);
+  renderPills();
+  recomputeFiltered();
+  if (filtered.length === 0) { fillRows(); return; }
+  currentIdx = 0;
+  reposition(false);
+  fillRows();
+  renderDetail(filtered[currentIdx]);
+}
+
+// ── RELIC SEARCH INPUT ───────────────────────────────────────────────
+function positionAC() {
+  const input = document.getElementById('relicSearchInput');
+  const ac    = document.getElementById('relicAC');
+  if (!input || !ac) return;
+  const r = input.getBoundingClientRect();
+  ac.style.top  = (r.bottom + 4) + 'px';
+  ac.style.left = r.left + 'px';
+  ac.style.width = Math.max(280, r.width) + 'px';
+}
+
+function onRelicInput() {
+  const input = document.getElementById('relicSearchInput');
+  const wrap  = document.getElementById('relicInputWrap');
+  const ac    = document.getElementById('relicAC');
+  const q     = input.value.trim().toLowerCase();
+  wrap.classList.toggle('has-text', input.value.length > 0);
+
+  // No suggestions until user types
+  if (!q) { ac.innerHTML = ''; ac.classList.remove('open'); return; }
+
+  // Build candidate list:
+  // - Epics: only show if not already in slots
+  // - Common/Rare/Consumable: show even if already in slots, as long as adding
+  //   one more wouldn't exceed 3 total slots AND the build still has room
+  let candidates = allRelics.filter(r => {
+    if (!r.toLowerCase().includes(q)) return false;
+    const tier = getRelicTier(r);
+    if (tier === 'epic') {
+      // Epic: only one per slots list allowed
+      return !relicSlots.includes(r);
+    } else {
+      // Non-epic: allowed if adding one more is still <= 3 total
+      const currentCount = relicSlots.filter(s => s === r).length;
+      // Max copies of this relic in slots = max copies in any single build = 3
+      // (a build has 3 slots total so can't have more than 3 of the same)
+      return currentCount < 3 && relicSlots.length < 3;
+    }
+  });
+  candidates = candidates.slice(0, 16);
+
+  if (candidates.length === 0) {
+    ac.innerHTML = `<div class="relic-ac-item" style="color:var(--text-dim)">No relics found</div>`;
+  } else {
+    ac.innerHTML = candidates.map(r => {
+      const tier = getRelicTier(r);
+      const dc   = DOT_COLORS[tier] || DOT_COLORS.common;
+      // Preview: how many champs match if we add this relic
+      const testSlots = [...relicSlots, r];
+      const count = [...new Set(
+        rawData.filter(d => buildMatchesSlots(d, testSlots)).map(d => d.champion)
+      )].length;
+      const grey = count === 0 ? ' disabled' : '';
+      // Show a "×2" badge if this relic is already picked once
+      const existingCount = relicSlots.filter(s => s === r).length;
+      const dupBadge = existingCount > 0 ? ` <span style="font-size:10px;opacity:0.6;margin-left:2px;">×${existingCount+1}</span>` : '';
+      return `<div class="relic-ac-item${grey}" onclick="pickRelic('${r.replace(/'/g,"\\'")}')">
+        <div class="relic-ac-dot" style="background:${dc};box-shadow:0 0 4px ${dc}"></div>
+        ${r}${dupBadge}
+        <span class="relic-ac-count">${count} champ${count!==1?'s':''}</span>
+      </div>`;
+    }).join('');
+  }
+  positionAC();
+  ac.classList.add('open');
+}
+
+function pickRelic(r) {
+  if (relicSlots.length >= 3) return;
+  const tier = getRelicTier(r);
+  // Epics: block duplicates
+  if (tier === 'epic' && relicSlots.includes(r)) return;
+  relicSlots.push(r);
+  clearRelicInput();
+  renderPills();
+  recomputeFiltered();
+  if (filtered.length === 0) { fillRows(); return; }
+  currentIdx = 0;
+  reposition(false);
+  fillRows();
+  renderDetail(filtered[currentIdx]);
+}
+
+function clearRelicInput() {
+  const input = document.getElementById('relicSearchInput');
+  const wrap  = document.getElementById('relicInputWrap');
+  const ac    = document.getElementById('relicAC');
+  if (!input) return;
+  input.value = '';
+  wrap.classList.remove('has-text');
+  ac.innerHTML = ''; ac.classList.remove('open');
+}
+
+// Close autocomplete on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#relicInputWrap')) {
+    const ac = document.getElementById('relicAC');
+    if (ac) { ac.innerHTML = ''; ac.classList.remove('open'); }
+  }
+});
+
+// ── TAB SWITCHING ────────────────────────────────────────────────────
+function switchTab(tab) {
+  const champView    = document.querySelector('.main-wrapper');
+  const relicView    = document.getElementById('relicIndexPanel');
+  const tierlistView = document.getElementById('tierlistPanel');
+  const btnChamps    = document.getElementById('tabChampions');
+  const btnRelics    = document.getElementById('tabRelics');
+  const btnTierlist  = document.getElementById('tabTierlist');
+
+  // Hide all panels first
+  champView.style.display    = 'none';
+  relicView.style.display    = 'none';
+  tierlistView.style.display = 'none';
+  btnChamps.classList.remove('active');
+  btnRelics.classList.remove('active');
+  if (btnTierlist) btnTierlist.classList.remove('active');
+
+  if (tab === 'champions') {
+    champView.style.display = '';
+    btnChamps.classList.add('active');
+  } else if (tab === 'relics') {
+    relicView.style.display = 'flex';
+    relicView.style.flexDirection = 'column';
+    btnRelics.classList.add('active');
+    if (!relicView._initialized) {
+      riRender();
+      relicView._initialized = true;
+    }
+  } else if (tab === 'tierlist') {
+    tierlistView.style.display = 'flex';
+    if (btnTierlist) btnTierlist.classList.add('active');
+    tlInit();
+  }
+}
+
+// ── RELIC INDEX STATE ────────────────────────────────────────────────
+let riActiveTier = 'all';
+let riActiveRelic = null;
+
+// Precompute usage counts from rawData
+function riGetUsageCounts() {
+  const counts = {};
+  for (const d of rawData) {
+    for (const r of [d.r1, d.r2, d.r3]) {
+      counts[r] = (counts[r] || 0) + 1;
+    }
+  }
+  return counts;
+}
+
+function riSetTier(tier) {
+  riActiveTier = tier;
+  document.querySelectorAll('.ri-tier-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tier === tier);
+  });
+  riRender();
+}
+
+function riOnSearch() {
+  const input = document.getElementById('riSearch');
+  const wrap  = document.getElementById('riSearchWrap');
+  const ac    = document.getElementById('riAC');
+  const q     = input.value.trim().toLowerCase();
+  wrap.classList.toggle('has-text', input.value.length > 0);
+
+  riRender();
+
+  // Autocomplete suggestions
+  if (!q) { ac.innerHTML = ''; ac.classList.remove('open'); return; }
+
+  const TIER_COLORS = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+  const matches = Object.entries(RELIC_DB)
+    .filter(([name]) => name.toLowerCase().includes(q))
+    .slice(0, 12);
+
+  if (matches.length === 0) {
+    ac.innerHTML = `<div class="ri-ac-item" style="color:var(--text-dim)">No relics found</div>`;
+  } else {
+    ac.innerHTML = matches.map(([name, info]) => {
+      const tc  = TIER_COLORS[info.tier] || TIER_COLORS.common;
+      const ico = info.icon
+        ? `<img class="ri-ac-icon" src="${info.icon}" alt="${name}" onerror="this.style.display='none'">`
+        : `<div class="ri-ac-dot" style="background:${tc};box-shadow:0 0 4px ${tc};"></div>`;
+      const tierLabel = info.tier.charAt(0).toUpperCase() + info.tier.slice(1);
+      return `<div class="ri-ac-item" onclick="riAcSelect('${name.replace(/'/g,"\\'")}')">
+        ${ico}
+        <span>${name}</span>
+        <span class="ri-ac-tier" style="color:${tc}">${tierLabel}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Position dropdown under the input
+  const rect = input.getBoundingClientRect();
+  ac.style.top  = (rect.bottom + 4) + 'px';
+  ac.style.left = rect.left + 'px';
+  ac.style.width = Math.max(240, rect.width) + 'px';
+  ac.classList.add('open');
+}
+
+function riAcSelect(name) {
+  document.getElementById('riSearch').value = name;
+  document.getElementById('riSearchWrap').classList.add('has-text');
+  document.getElementById('riAC').innerHTML = '';
+  document.getElementById('riAC').classList.remove('open');
+  riRender();
+  riSelectRelic(name);
+}
+
+function riClearSearch() {
+  const input = document.getElementById('riSearch');
+  const wrap  = document.getElementById('riSearchWrap');
+  const ac    = document.getElementById('riAC');
+  input.value = '';
+  wrap.classList.remove('has-text');
+  ac.innerHTML = ''; ac.classList.remove('open');
+  riRender();
+}
+
+// Close ri autocomplete on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#riSearchWrap') && !e.target.closest('#riAC')) {
+    const ac = document.getElementById('riAC');
+    if (ac) { ac.innerHTML = ''; ac.classList.remove('open'); }
+  }
+});
+
+function riRender() {
+  const grid     = document.getElementById('riGrid');
+  const countEl  = document.getElementById('riCount');
+  const query    = (document.getElementById('riSearch')?.value || '').toLowerCase().trim();
+  const sortMode = document.getElementById('riSort')?.value || 'uses';
+  const usage    = riGetUsageCounts();
+
+  // Gather all relics from RELIC_DB
+  let relics = Object.keys(RELIC_DB).map(name => ({
+    name,
+    ...RELIC_DB[name],
+    uses: usage[name] || 0
+  }));
+
+  // Filter by tier
+  if (riActiveTier !== 'all') {
+    relics = relics.filter(r => r.tier === riActiveTier);
+  }
+
+  // Filter by search
+  if (query) {
+    relics = relics.filter(r => r.name.toLowerCase().includes(query));
+  }
+
+  // Sort
+  const TIER_ORDER = { epic: 0, rare: 1, common: 2, consumable: 3 };
+  if (sortMode === 'uses') {
+    relics.sort((a, b) => b.uses - a.uses || a.name.localeCompare(b.name));
+  } else if (sortMode === 'name') {
+    relics.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (sortMode === 'tier') {
+    relics.sort((a, b) => (TIER_ORDER[a.tier] ?? 9) - (TIER_ORDER[b.tier] ?? 9) || b.uses - a.uses);
+  }
+
+  countEl.textContent = `${relics.length} relic${relics.length !== 1 ? 's' : ''}`;
+
+  const TIER_COLORS = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+
+  grid.innerHTML = relics.map(r => {
+    const tc  = TIER_COLORS[r.tier] || TIER_COLORS.common;
+    const ico = r.icon
+      ? `<img src="${r.icon}" alt="${r.name}" onerror="this.parentElement.innerHTML='<span class=ri-card-icon-placeholder>💎</span>'">`
+      : `<span class="ri-card-icon-placeholder">💎</span>`;
+    const isActive = riActiveRelic === r.name ? ' active' : '';
+    const ttHTML   = buildRelicTooltipHTML(r.name, r);
+    const escaped  = ttHTML.replace(/"/g, '&quot;');
+    return `<div class="ri-card ${r.tier}${isActive}" onclick="riSelectRelic('${r.name.replace(/'/g,"\\'")}') " data-tooltip="${escaped}">
+      <div class="ri-card-tier-dot" style="background:${tc};box-shadow:0 0 4px ${tc};"></div>
+      <div class="ri-card-icon">${ico}</div>
+      <div class="ri-card-name">${r.name}</div>
+      ${r.tier !== 'consumable' ? `<div class="ri-card-uses">${r.uses} build${r.uses !== 1 ? 's' : ''}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function riSelectRelic(name) {
+  riActiveRelic = name;
+
+  // Update active card highlight
+  document.querySelectorAll('.ri-card').forEach(c => {
+    c.classList.toggle('active', c.querySelector('.ri-card-name')?.textContent === name);
+  });
+
+  const info    = RELIC_DB[name] || {};
+  const tier    = info.tier || 'common';
+  const subtype = info.subtype || '';
+  const TIER_COLORS = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+  const tc = TIER_COLORS[tier] || TIER_COLORS.common;
+
+  // All builds using this relic
+  const builds = rawData.filter(d => [d.r1, d.r2, d.r3].includes(name));
+
+  let tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1);
+  if (subtype === 'signature') tierLabel += ' · Signature';
+  else if (subtype === 'general') tierLabel += ' · General';
+
+  // Source line
+  let sourceHTML = '';
+  if (info.source) {
+    sourceHTML = `<div class="ri-detail-source"><b>📦 How to get:</b> ${info.source}</div>`;
+  } else if (subtype === 'signature') {
+    sourceHTML = `<div class="ri-detail-source"><b>📦 How to get:</b> Champion Bundle · Glory Store (600 Glory)</div>`;
+  } else if (tier === 'epic' && subtype === 'general') {
+    sourceHTML = `<div class="ri-detail-source"><b>📦 How to get:</b> Gold Reliquary (duplicate protection) · Silver/Bronze Reliquary (rare)</div>`;
+  } else if (tier === 'rare') {
+    sourceHTML = `<div class="ri-detail-source"><b>📦 How to get:</b> Bronze Reliquary (10%) · Silver Reliquary · Gold Vault (30%)</div>`;
+  } else if (tier === 'common') {
+    sourceHTML = `<div class="ri-detail-source"><b>📦 How to get:</b> Bronze Reliquary (90%) · Gold Vault (30%)</div>`;
+  }
+  if (info.gloryStore) {
+    sourceHTML += `<div class="ri-detail-source" style="margin-top:4px;">🏆 ${info.gloryStore}</div>`;
+  }
+
+  const icoHTML = info.icon
+    ? `<img src="${info.icon}" alt="${name}" onerror="this.style.display='none'">`
+    : `<span style="font-size:36px;opacity:0.25;">💎</span>`;
+
+  let html = `
+    <div class="ri-detail-header">
+      <div class="ri-detail-icon">${icoHTML}</div>
+      <div>
+        <div class="ri-detail-name" style="color:${tc}">${name}</div>
+        <div class="ri-detail-meta">
+          <span style="width:8px;height:8px;border-radius:50%;background:${tc};box-shadow:0 0 4px ${tc};display:inline-block;flex-shrink:0;"></span>
+          ${tierLabel}
+        </div>
+      </div>
+    </div>
+    <div class="ri-detail-desc">${highlightKeywords(info.desc || '')}</div>
+    ${info.champion && subtype === 'signature' ? `<div class="ri-detail-source">Signature relic for <b>${info.champion}</b></div>` : ''}
+    ${sourceHTML}
+    ${tier !== 'consumable' ? `<div class="ri-detail-builds-title">${builds.length} build${builds.length !== 1 ? 's' : ''} using this relic</div>` : ''}
+  `;
+
+  // Group builds by champion
+  const byChamp = {};
+  for (const b of builds) {
+    if (!byChamp[b.champion]) byChamp[b.champion] = [];
+    byChamp[b.champion].push(b);
+  }
+
+  Object.entries(byChamp).sort(([a],[b]) => a.localeCompare(b)).forEach(([champ, champBuilds], gi) => {
+    champBuilds.forEach((b, bi) => {
+      const relics = [b.r1, b.r2, b.r3];
+      const badges = relics.map(r => {
+        const t = getRelicTier(r);
+        const highlight = r === name ? ' filter-match' : '';
+        return `<div class="relic-badge ${t}${highlight}" style="font-size:11px;padding:3px 8px;"><div class="relic-dot"></div>${r}</div>`;
+      }).join('');
+
+      const starMatch = b.star.match(/^([^-]+)(?:-(.+))?$/);
+      const starStr   = starMatch ? starMatch[1].trim() : b.star;
+      const levelStr  = starMatch?.[2] ? starMatch[2].trim() : '';
+      const players   = b.player.split(',').map(p => p.trim()).filter(Boolean);
+      const imgSrc    = champImg(champ);
+      const champImgHTML = imgSrc
+        ? `<img src="${imgSrc}" alt="${champ}" onerror="this.style.display='none'">`
+        : '';
+
+      // Find the build's index within all builds for this champion (matches renderDetail order)
+      const champBuildsAll = rawData.filter(d => d.champion === champ);
+      const buildGlobalIdx = champBuildsAll.indexOf(b);
+
+      html += `<div class="ri-build-row" style="animation-delay:${(gi * 3 + bi) * 0.03}s"
+        onclick="jumpToBuild('${champ.replace(/'/g,"\\'")}', ${buildGlobalIdx})"
+        title="Jump to this build in Champions view">
+        <div class="ri-build-row-inner">
+          <div class="ri-build-main">
+            <div class="ri-build-champ">${champImgHTML}${champ}</div>
+            <div class="ri-build-relics">${badges}</div>
+            <div class="ri-build-star">⭐ ${starStr}${levelStr ? ` · Lvl ${levelStr}` : ''}</div>
+            <div class="ri-build-players">
+              <span class="ri-build-players-label">Players:&nbsp;</span>
+              ${players.map(p => `<span class="player-chip" onclick="event.stopPropagation();openPlayerDrawer(this.textContent.trim())">${p}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+
+  // Store keyword data on the panel for hover
+  const kwList = getRelicKeywords(info.desc || '');
+  const panel = document.getElementById('riDetailPanel');
+  panel.innerHTML = html;
+
+  // Attach hover on the whole detail panel → show popup in grid area
+  if (kwList.length > 0) {
+    const kwData = kwList.map(({key, data}) => ({key, icon: data.icon, desc: data.desc}));
+    panel.onmouseenter = () => riShowKwPopup(kwData);
+    panel.onmouseleave = () => riHideKwPopup();
+  } else {
+    panel.onmouseenter = null;
+    panel.onmouseleave = null;
+    riHideKwPopup();
+  }
+}
+
+// ── RELIC INDEX KEYWORD POPUP ─────────────────────────────────────────
+const riKwPopup = document.getElementById('riKwPopup');
+
+function riShowKwPopup(kwList) {
+  riKwPopup.innerHTML = `
+    <div class="ri-kw-popup-title">Keywords</div>
+    ${kwList.map(kw => `
+      <div class="ri-kw-popup-chip">
+        <div class="ri-kw-popup-icon">${kw.icon}</div>
+        <div class="ri-kw-popup-body">
+          <div class="ri-kw-popup-name">${kw.key}</div>
+          <div class="ri-kw-popup-desc">${kw.desc}</div>
+        </div>
+      </div>`).join('')}
+  `;
+  riKwPopup.classList.add('visible');
+
+  // Position inside the grid area (left panel), vertically centered
+  const grid   = document.getElementById('riGrid');
+  const panel  = document.getElementById('riDetailPanel');
+  const gr     = grid.getBoundingClientRect();
+  const pr     = panel.getBoundingClientRect();
+  const pw     = riKwPopup.offsetWidth;
+  const ph     = riKwPopup.offsetHeight;
+  const vh     = window.innerHeight;
+  const gap    = 16;
+
+  // Horizontally: right-aligned inside the grid, just left of the detail panel border
+  const left = Math.max(gr.left + gap, pr.left - pw - gap);
+
+  // Vertically: start from top of the detail panel, grow down, clamp to viewport
+  let top = pr.top + gap;
+  if (top + ph > vh - 8) top = vh - ph - 8;
+  if (top < 8) top = 8;
+
+  riKwPopup.style.left = left + 'px';
+  riKwPopup.style.top  = top  + 'px';
+}
+
+function riHideKwPopup() {
+  riKwPopup.classList.remove('visible');
+}
+
+// ── BUILD SELECTION ───────────────────────────────────────────────────
+function selectBuild(card) {
+  // Deselect all, then select clicked
+  document.querySelectorAll('.build-card.selected').forEach(c => {
+    c.classList.remove('selected', 'jump-highlight');
+  });
+  card.classList.add('selected');
+}
+
+// Click on empty detail area to deselect
+document.addEventListener('click', e => {
+  const detail = document.getElementById('detail');
+  if (detail && detail.contains(e.target) && !e.target.closest('.build-card')) {
+    document.querySelectorAll('.build-card.selected').forEach(c => {
+      c.classList.remove('selected', 'jump-highlight');
+    });
+  }
+});
+
+// ── JUMP TO BUILD ────────────────────────────────────────────────────
+function jumpToBuild(champion, buildIdx) {
+  // 1. Switch to Champions tab
+  switchTab('champions');
+
+  // 2. Clear relic filter so all builds are visible
+  relicSlots.length = 0;
+  renderPills();
+  recomputeFiltered();
+
+  // 3. Navigate drum to this champion
+  const idx = filtered.indexOf(champion);
+  if (idx >= 0) {
+    currentIdx = idx;
+    reposition(false);
+    fillRows();
+  }
+
+  // 4. Render detail for this champion
+  renderDetail(champion);
+
+  // 5. After render settles, select + scroll to the target build card
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const card = document.querySelector(`.build-card[data-build-id="${champion}::${buildIdx}"]`);
+      if (!card) return;
+      // Clear any previous selection
+      document.querySelectorAll('.build-card.selected').forEach(c => c.classList.remove('selected', 'jump-highlight'));
+      card.classList.add('selected', 'jump-highlight');
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Remove jump-highlight after animation but keep selected
+      setTimeout(() => card.classList.remove('jump-highlight'), 1100);
+    });
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+requestAnimationFrame(() => {
+  buildPool();
+  renderDetail(filtered[0]);
+});
+
+
+
+// ── PLAYER DRAWER ────────────────────────────────────────────────────
+
+function openPlayerDrawer(playerName) {
+  const builds = rawData.filter(d =>
+    d.player.split(',').map(p => p.trim()).includes(playerName)
+  );
+
+  document.getElementById('pdPlayerName').textContent = playerName;
+  document.getElementById('pdBuildCount').textContent =
+    builds.length + ' build' + (builds.length !== 1 ? 's' : '');
+
+  // Group by champion
+  const byChamp = {};
+  for (const b of builds) {
+    if (!byChamp[b.champion]) byChamp[b.champion] = [];
+    byChamp[b.champion].push(b);
+  }
+
+  const TIER_COLORS = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+
+  let html = '';
+  Object.entries(byChamp).sort(([a],[b]) => a.localeCompare(b)).forEach(([champ, champBuilds]) => {
+    const imgSrc = champImg(champ);
+    const imgHTML = imgSrc
+      ? `<img src="${imgSrc}" alt="${champ}" onerror="this.style.display='none'">`
+      : `<span style="font-size:14px">${EMOJI_FALLBACK[champ] || '⚔️'}</span>`;
+
+    html += `<div class="pd-champ-group">
+      <div class="pd-champ-label">${imgHTML}${champ}</div>`;
+
+    champBuilds.forEach(b => {
+      const relics = [b.r1, b.r2, b.r3];
+      const starMatch = b.star.match(/^([^-]+)(?:-(.+))?$/);
+      const starStr = starMatch ? starMatch[1].trim() : b.star;
+      const levelStr = starMatch?.[2] ? ' · Lvl ' + starMatch[2].trim() : '';
+
+      const badges = relics.map(r => {
+        const t = getRelicTier(r);
+        const tc = TIER_COLORS[t] || TIER_COLORS.common;
+        return `<div class="relic-badge ${t}" style="font-size:10px;padding:2px 7px;">
+          <div class="relic-dot"></div>${r}
+        </div>`;
+      }).join('');
+
+      // Find build index for jumpToBuild
+      const champBuildsAll = rawData.filter(d => d.champion === champ);
+      const buildIdx = champBuildsAll.indexOf(b);
+
+      html += `<div class="pd-build-row" onclick="pdJumpToBuild('${champ.replace(/'/g,"\'")}', ${buildIdx})">
+        <div style="flex:1;min-width:0;">
+          <div class="pd-build-relics">${badges}</div>
+          <div class="pd-build-jump">Jump to build</div>
+        </div>
+        <div class="pd-build-star">⭐ ${starStr}${levelStr}</div>
+      </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  document.getElementById('pdBody').innerHTML = html;
+  document.getElementById('playerDrawer').classList.add('open');
+  document.getElementById('playerDrawerOverlay').classList.add('open');
+}
+
+function closePlayerDrawer() {
+  document.getElementById('playerDrawer').classList.remove('open');
+  document.getElementById('playerDrawerOverlay').classList.remove('open');
+}
+
+function pdJumpToBuild(champion, buildIdx) {
+  closePlayerDrawer();
+  // Small delay so drawer closes before jumping
+  setTimeout(() => jumpToBuild(champion, buildIdx), 180);
+}
+
+// Close on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePlayerDrawer();
+});
+
+
+// ══════════════════════════════════════════════════════════
+// TIER LIST SYSTEM
+// ══════════════════════════════════════════════════════════
+
+// ── State ──────────────────────────────────────────────────
+let tlCurrentPreset = 'relic-usage';
+let tlShowMode  = 'relics';   // 'relics' | 'champs' | 'both'
+let tlFilters   = { epic:true, rare:true, common:true, consumable:false };
+let tlDragSrc   = null;       // { item, fromContainer }
+let tlInitialized = false;
+
+const TL_COLORS = [
+  { key:'S', label:'S', bg:'#ff7f7f', text:'#ff2222' },
+  { key:'A', label:'A', bg:'#ffbf7f', text:'#ff8800' },
+  { key:'B', label:'B', bg:'#ffdf7f', text:'#ccaa00' },
+  { key:'C', label:'C', bg:'#7fff7f', text:'#22aa22' },
+  { key:'D', label:'D', bg:'#7fbfff', text:'#2266ff' },
+  { key:'F', label:'F', bg:'#bf7fff', text:'#8800ff' },
+];
+
+const PRESET_META = {
+  'relic-usage': {
+    title: 'Relic Usage Tier List',
+    desc: 'Ranks every relic by how many times it appears across all recorded builds. A relic in the top tier is picked constantly — one at the bottom is rarely or never used.',
+    tiers: [
+      { id:'t1', label:'Core',       sublabel:'Top 5 — almost always picked',     color:'S' },
+      { id:'t2', label:'Staple',     sublabel:'Next 10 — very frequent picks',    color:'A' },
+      { id:'t3', label:'Popular',    sublabel:'Next 20 — solid choice',           color:'B' },
+      { id:'t4', label:'Occasional', sublabel:'Sometimes used',                   color:'C' },
+      { id:'t5', label:'Rare',       sublabel:'Rarely appears in builds',         color:'D' },
+      { id:'t6', label:'Unseen',     sublabel:'Bottom 10 — zero or near-zero use',color:'F' },
+    ],
+  },
+  'relic-diversity': {
+    title: 'Relic Versatility Tier List',
+    desc: 'Ranks relics by how many different champions use them. A versatile relic works on many champions; a niche one is only good on one or two.',
+    tiers: [
+      { id:'t1', label:'Universal',  sublabel:'Works on almost any champion',     color:'S' },
+      { id:'t2', label:'Flexible',   sublabel:'Strong on many champions',         color:'A' },
+      { id:'t3', label:'Decent Fit', sublabel:'Fits a good variety',              color:'B' },
+      { id:'t4', label:'Situational',sublabel:'Only a handful of champs use it',  color:'C' },
+      { id:'t5', label:'Niche',      sublabel:'Tied to 1–2 specific champions',   color:'D' },
+      { id:'t6', label:'Unique',     sublabel:'Seen on a single champion only',   color:'F' },
+    ],
+  },
+  'champ-diversity': {
+    title: 'Champion Build Variety Tier List',
+    desc: 'Ranks champions by how many different builds are recorded for them. More builds = more ways to play. Fewer builds doesn't mean a champion is weak — it may just have one optimal path.',
+    tiers: [
+      { id:'t1', label:'Many Paths',   sublabel:'Lots of recorded builds',           color:'S' },
+      { id:'t2', label:'Flexible',     sublabel:'Several viable builds',             color:'A' },
+      { id:'t3', label:'Some Options', sublabel:'A handful of build variations',     color:'B' },
+      { id:'t4', label:'Limited',      sublabel:'Only a couple of builds recorded',  color:'C' },
+      { id:'t5', label:'One-Track',    sublabel:'Essentially one build path',        color:'D' },
+      { id:'t6', label:'Single Build', sublabel:'Only one build in the data',        color:'F' },
+    ],
+  },
+};
+
+const DEFAULT_TIERS = PRESET_META['relic-usage'].tiers.map(t => ({...t, items:[]}));
+
+let tlTiers = [];
+let tlUnrankedItems = [];
+let tlTierCounter = 10;
+
+// ── Init & preset loading ───────────────────────────────────
+function tlInit() {
+  if (!tlInitialized) {
+    tlTiers = DEFAULT_TIERS.map(t => ({ ...t, items:[] }));
+    tlInitialized = true;
+  }
+  tlLoadPreset(tlCurrentPreset);
+}
+
+function tlLoadPreset(preset) {
+  tlCurrentPreset = preset;
+  document.querySelectorAll('.tl-preset-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.preset === preset);
+  });
+  const meta = PRESET_META[preset];
+  tlTiers = meta.tiers.map(t => ({...t, items:[]}));
+  // Update description banner
+  const descEl = document.getElementById('tlDescription');
+  if (descEl) descEl.textContent = meta.desc;
+  const titleEl = document.getElementById('tlTitleInput');
+  if (titleEl) titleEl.value = meta.title;
+  // Auto-set show mode to match preset type
+  if (preset === 'champ-diversity') {
+    tlShowMode = 'champs';
+    document.getElementById('tlShowRelics')?.classList.remove('active');
+    document.getElementById('tlShowChamps')?.classList.add('active');
+  } else {
+    tlShowMode = 'relics';
+    document.getElementById('tlShowRelics')?.classList.add('active');
+    document.getElementById('tlShowChamps')?.classList.remove('active');
+  }
+  // Show/hide relic filter row based on mode
+  const relicFilterRow = document.getElementById('tlRelicFilterRow');
+  if (relicFilterRow) relicFilterRow.style.display = tlShowMode === 'relics' ? '' : 'none';
+  tlFillFromPreset();
+  tlRender();
+}
+
+function tlGetRelicItems() {
+  // Build sorted relic list based on preset
+  const counts = {};
+  const champSets = {};
+  for (const d of rawData) {
+    for (const r of [d.r1, d.r2, d.r3]) {
+      if (!r) continue;
+      counts[r] = (counts[r] || 0) + 1;
+      if (!champSets[r]) champSets[r] = new Set();
+      champSets[r].add(d.champion);
+    }
+  }
+  let relics = Object.keys(RELIC_DB).filter(r => {
+    const info = RELIC_DB[r];
+    if (!tlFilters[info.tier || 'common']) return false;
+    return true;
+  });
+
+  if (tlCurrentPreset === 'relic-usage') {
+    relics.sort((a,b) => (counts[b]||0) - (counts[a]||0));
+  } else if (tlCurrentPreset === 'relic-diversity') {
+    relics.sort((a,b) => ((champSets[b]||{size:0}).size) - ((champSets[a]||{size:0}).size));
+  } else {
+    relics.sort((a,b) => (counts[b]||0) - (counts[a]||0));
+  }
+
+  return relics.map(r => {
+    const info = RELIC_DB[r] || {};
+    return {
+      id: 'relic::' + r,
+      name: r,
+      type: 'relic',
+      tier: info.tier || 'common',
+      icon: info.icon || null,
+      score: tlCurrentPreset === 'relic-diversity'
+        ? (champSets[r]||{size:0}).size
+        : (counts[r]||0),
+    };
+  });
+}
+
+function tlGetChampItems() {
+  const counts = {};
+  for (const d of rawData) counts[d.champion] = (counts[d.champion]||0)+1;
+  const champs = [...new Set(rawData.map(d=>d.champion))];
+  champs.sort((a,b)=>(counts[b]||0)-(counts[a]||0));
+  return champs.map(c => ({
+    id: 'champ::' + c,
+    name: c,
+    type: 'champ',
+    score: counts[c]||0,
+    icon: champImg(c),
+  }));
+}
+
+function tlGetAllItems() {
+  if (tlShowMode === 'champs') return tlGetChampItems();
+  return tlGetRelicItems();
+}
+
+function tlFillFromPreset() {
+  const items = tlGetAllItems();
+  const total = items.length;
+
+  // Distribute into tiers by auto logic
+  let cuts;
+  if (tlCurrentPreset === 'relic-usage' || tlCurrentPreset === 'relic-diversity') {
+    // Must Get: top 5, Very Good: next 10, Useful: next 20, Niche: next until last 10, Bad: last 10
+    const t1end = 5;
+    const t2end = 15;
+    const t3end = 35;
+    const t5start = Math.max(total - 10, t3end);
+    const t4end = t5start;
+    cuts = [t1end, t2end, t3end, t4end, total, total];
+  } else {
+    // Champion diversity: split by quartile-ish
+    const q = Math.floor(total / 6);
+    cuts = [q, q*2, q*3, q*4, q*5, total];
+  }
+
+  tlTiers.forEach((tier, i) => {
+    const from = i === 0 ? 0 : cuts[i-1];
+    const to   = cuts[i];
+    tier.items = items.slice(from, to).map(it => ({...it}));
+  });
+  tlUnrankedItems = [];
+}
+
+// ── Render ─────────────────────────────────────────────────
+function tlRender() {
+  const tiersEl    = document.getElementById('tlTiers');
+  const unrankedEl = document.getElementById('tlUnranked');
+  if (!tiersEl) return;
+
+  tiersEl.innerHTML = '';
+  tlTiers.forEach((tier, ti) => {
+    const row = document.createElement('div');
+    row.className = 'tl-tier';
+    row.dataset.color = tier.color;
+    row.dataset.tierid = tier.id;
+
+    const colorInfo = TL_COLORS.find(c=>c.key===tier.color) || TL_COLORS[0];
+
+    const sublabel = tier.sublabel ? `<div class="tl-tier-sublabel">${tier.sublabel}</div>` : '';
+    row.innerHTML = `
+      <div class="tl-tier-label-wrap" style="background:${colorInfo.bg}22;color:${colorInfo.text};">
+        <textarea class="tl-tier-label" rows="2"
+          onchange="tlRenameTier('${tier.id}', this.value)"
+          onclick="this.focus()"
+        >${tier.label}</textarea>
+        ${sublabel}
+        <div class="tl-tier-ctrl">
+          <button onclick="tlMoveTier('${tier.id}',-1)" title="Move up">▲</button>
+          <button onclick="tlMoveTier('${tier.id}',1)" title="Move down">▼</button>
+          <button onclick="tlDeleteTier('${tier.id}')" title="Delete tier" style="color:#ff6666;">✕</button>
+        </div>
+      </div>
+      <div class="tl-tier-items" data-tierid="${tier.id}"></div>
+    `;
+
+    const itemsEl = row.querySelector('.tl-tier-items');
+    tier.items.forEach(item => {
+      itemsEl.appendChild(tlMakeItemEl(item));
+    });
+
+    tlSetupDropzone(itemsEl);
+    tiersEl.appendChild(row);
+  });
+
+  // Unranked
+  unrankedEl.innerHTML = '';
+  tlUnrankedItems.forEach(item => {
+    unrankedEl.appendChild(tlMakeItemEl(item));
+  });
+  tlSetupDropzone(unrankedEl);
+}
+
+function tlMakeItemEl(item) {
+  const el = document.createElement('div');
+  el.className = 'tl-item';
+  el.draggable = true;
+  el.dataset.itemid = item.id;
+
+  const TIER_COLORS_MAP = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+
+  let imgHTML = '';
+  if (item.type === 'relic') {
+    const tc = TIER_COLORS_MAP[item.tier] || 'var(--common)';
+    if (item.icon) {
+      imgHTML = `<img src="${item.icon}" class="tl-item-img-relic" alt="${item.name}" onerror="this.style.display='none'">`;
+    } else {
+      imgHTML = `<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:22px;opacity:0.5;">💎</div>`;
+    }
+    el.innerHTML = `
+      <div class="tl-item-dot" style="background:${tc};box-shadow:0 0 4px ${tc};"></div>
+      ${imgHTML}
+      <div class="tl-item-name">${item.name}</div>`;
+  } else {
+    if (item.icon) {
+      imgHTML = `<img src="${item.icon}" alt="${item.name}" onerror="this.style.display='none'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">`;
+    } else {
+      imgHTML = `<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:24px;">⚔️</div>`;
+    }
+    el.innerHTML = `${imgHTML}<div class="tl-item-name">${item.name}</div>`;
+  }
+
+  // Drag events
+  el.addEventListener('dragstart', e => {
+    tlDragSrc = item;
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', item.id);
+  });
+  el.addEventListener('dragend', () => {
+    el.classList.remove('dragging');
+    document.querySelectorAll('.tl-tier').forEach(r => r.classList.remove('drag-over'));
+    document.querySelectorAll('.tl-unranked-pool').forEach(p => p.classList.remove('drag-over'));
+  });
+  return el;
+}
+
+function tlSetupDropzone(el) {
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    // Highlight parent tier row or pool
+    const tier = el.closest('.tl-tier');
+    if (tier) tier.classList.add('drag-over');
+    else el.classList.add('drag-over');
+  });
+  el.addEventListener('dragleave', e => {
+    const tier = el.closest('.tl-tier');
+    if (tier) tier.classList.remove('drag-over');
+    else el.classList.remove('drag-over');
+  });
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    const tier = el.closest('.tl-tier');
+    if (tier) tier.classList.remove('drag-over');
+    else el.classList.remove('drag-over');
+    if (!tlDragSrc) return;
+
+    // Remove from old location
+    tlRemoveItemFromAll(tlDragSrc.id);
+
+    // Add to new location
+    const tierId = el.dataset.tierid || (tier && tier.dataset.tierid);
+    if (tierId) {
+      const t = tlTiers.find(t => t.id === tierId);
+      if (t) t.items.push({...tlDragSrc});
+    } else {
+      // Unranked pool
+      tlUnrankedItems.push({...tlDragSrc});
+    }
+    tlDragSrc = null;
+    tlRender();
+  });
+}
+
+function tlRemoveItemFromAll(itemId) {
+  tlTiers.forEach(t => { t.items = t.items.filter(i => i.id !== itemId); });
+  tlUnrankedItems = tlUnrankedItems.filter(i => i.id !== itemId);
+}
+
+// ── Tier operations ─────────────────────────────────────────
+function tlRenameTier(id, val) {
+  const t = tlTiers.find(t=>t.id===id);
+  if (t) t.label = val.trim() || t.label;
+}
+
+function tlSetColor(id, colorKey) {
+  const t = tlTiers.find(t=>t.id===id);
+  if (t) { t.color = colorKey; tlRender(); }
+}
+
+function tlMoveTier(id, dir) {
+  const i = tlTiers.findIndex(t=>t.id===id);
+  const j = i + dir;
+  if (j < 0 || j >= tlTiers.length) return;
+  [tlTiers[i], tlTiers[j]] = [tlTiers[j], tlTiers[i]];
+  tlRender();
+}
+
+function tlDeleteTier(id) {
+  const t = tlTiers.find(t=>t.id===id);
+  if (t) tlUnrankedItems.push(...t.items);
+  tlTiers = tlTiers.filter(t=>t.id!==id);
+  tlRender();
+}
+
+function tlAddTier() {
+  tlTierCounter++;
+  tlTiers.push({
+    id: 'tc'+tlTierCounter,
+    label: 'New Tier',
+    color: 'custom1',
+    items: [],
+  });
+  tlRender();
+  // Scroll to bottom
+  document.querySelector('.tl-main').scrollTo({top:99999,behavior:'smooth'});
+}
+
+function tlResetTiers() {
+  // Collect all items
+  const allItems = [];
+  tlTiers.forEach(t => allItems.push(...t.items));
+  allItems.push(...tlUnrankedItems);
+  tlTiers = DEFAULT_TIERS.map(t => ({...t, items:[]}));
+  tlUnrankedItems = allItems;
+  tlRender();
+}
+
+function tlClearAll() {
+  const allItems = [];
+  tlTiers.forEach(t => allItems.push(...t.items));
+  allItems.push(...tlUnrankedItems);
+  tlTiers.forEach(t => t.items = []);
+  tlUnrankedItems = allItems;
+  tlRender();
+}
+
+function tlAutoFill() {
+  tlFillFromPreset();
+  tlRender();
+}
+
+// ── Toggle controls ─────────────────────────────────────────
+function tlToggleShow(mode) {
+  tlShowMode = mode;
+  ['relics','champs','both'].forEach(m => {
+    document.getElementById('tlShow' + m.charAt(0).toUpperCase() + m.slice(1))
+      ?.classList.toggle('active', m === mode);
+  });
+  tlFillFromPreset();
+  tlRender();
+}
+
+function tlToggleFilter(tier) {
+  tlFilters[tier] = !tlFilters[tier];
+  document.getElementById('tlFilter' + tier.charAt(0).toUpperCase() + tier.slice(1))
+    ?.classList.toggle('active', tlFilters[tier]);
+  tlFillFromPreset();
+  tlRender();
+}
+
+// ── Export as image ─────────────────────────────────────────
+function tlExportImage() {
+  // Use html2canvas if available, otherwise just print a message
+  const main = document.querySelector('.tl-main');
+  const title = document.getElementById('tlTitleInput')?.value || 'tier-list';
+  // Simple fallback: tell user to screenshot
+  alert('To save your tier list as an image, use your browser\'s screenshot tool or press PrintScreen. (html2canvas not loaded)');
+}
+
+
+</script>
+</body>
+</html>

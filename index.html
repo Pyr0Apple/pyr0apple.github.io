@@ -1,0 +1,4325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoR Champion Relic Explorer</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-deep: #07090f;
+    --bg-panel: #0d1119;
+    --bg-card: #111827;
+    --bg-hover: #1a2236;
+    --gold: #c89b3c;
+    --gold-light: #f0d080;
+    --gold-dim: #7a5e22;
+    --accent: #4a9eff;
+    --text: #d4c9b0;
+    --text-dim: #7a7060;
+    --border: #2a2215;
+    --border-gold: #3a2e10;
+    --epic: #e060ff;
+    --epic-bg: #2a0a3a;
+    --epic-border: #7a20b0;
+    --rare: #4a9eff;
+    --rare-bg: #0a1a3a;
+    --rare-border: #1a50a0;
+    --common: #50d060;
+    --common-bg: #0a2a10;
+    --common-border: #1a601a;
+    --consumable: #ff9a2e;
+    --consumable-bg: #1e0e00;
+    --consumable-border: #7a3d00;
+    --item-h: 58px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Rajdhani', sans-serif;
+    background: var(--bg-deep);
+    color: var(--text);
+    height: 100vh;
+    max-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(74,158,255,0.04) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(200,155,60,0.05) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 50%, rgba(224,96,255,0.02) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    position: relative;
+    z-index: 10;
+    padding: 18px 40px 18px;
+    border-bottom: 1px solid var(--border-gold);
+    background: linear-gradient(180deg, rgba(200,155,60,0.08) 0%, transparent 100%);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+  }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    position: relative;
+  }
+
+  .header-rune {
+    width: 48px; height: 48px;
+    border: 2px solid var(--gold-dim);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+    background: radial-gradient(circle, rgba(200,155,60,0.15), transparent);
+  }
+
+  header h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 22px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    text-shadow: 0 0 30px rgba(200,155,60,0.4);
+    line-height: 1.2;
+  }
+
+  header p {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .legend {
+    position: relative; z-index: 10;
+    display: flex; gap: 20px; align-items: center;
+    padding: 10px 40px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(0,0,0,0.3);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Exo 2', sans-serif;
+    flex-shrink: 0;
+  }
+
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .legend-dot.epic { background: var(--epic); box-shadow: 0 0 6px var(--epic); }
+  .legend-dot.rare { background: var(--rare); box-shadow: 0 0 6px var(--rare); }
+  .legend-dot.common { background: var(--common); box-shadow: 0 0 6px var(--common); }
+  .legend-dot.consumable { background: var(--consumable); box-shadow: 0 0 6px var(--consumable); }
+
+  .main-wrapper {
+    position: relative; z-index: 10;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    height: 0; /* forces flex child to not exceed parent */
+  }
+
+  .main {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Detail column = just the scrollable detail, no filter panel */
+  .detail-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 260px;
+    flex-shrink: 0;
+    border-right: 1px solid var(--border-gold);
+    background: rgba(0,0,0,0.25);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    /* overflow:hidden removed — it was clipping the nav buttons on smaller screens */
+  }
+
+  .drum-search-wrap {
+    padding: 10px 12px 8px;
+    border-bottom: 1px solid var(--border-gold);
+    position: relative;
+    flex-shrink: 0;
+    z-index: 20;
+  }
+  .drum-search-wrap .kcs-box {
+    width: 100%;
+  }
+  .drum-search-icon {
+    display: none; /* replaced by kcs-box styling */
+  }
+
+  /* 
+   * DRUM CONTAINER — takes remaining space in sidebar.
+   * The selector bar is a SIBLING of the viewport, absolutely
+   * positioned in the center of drum-container so it NEVER moves.
+   */
+  .drum-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+
+
+
+  /* Scrollable viewport — same size as container, clips content */
+  .drum-viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  /* Top fade only — bottom fade removed (caused dark dip artifact during scroll) */
+  .drum-viewport::before {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    height: 180px;
+    z-index: 5;
+    pointer-events: none;
+    top: 0;
+    background: linear-gradient(to bottom, rgba(7,9,15,0.97) 0%, transparent 100%);
+  }
+
+  /* The moving track */
+  .drum-track {
+    position: absolute;
+    left: 0; right: 0;
+    top: 0;
+    will-change: transform;
+  }
+  .drum-track.animating {
+    transition: transform 0.15s ease;
+  }
+
+  /* Individual drum row */
+  .drum-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: var(--item-h);
+    padding: 0 14px 0 16px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(42,34,21,0.3);
+    color: var(--text-dim);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    /* Single transition that covers everything — no mid-scroll flicker */
+    transition: color 0.18s ease, background 0.18s ease, transform 0.18s ease;
+    position: relative;
+    transform-origin: left center;
+    will-change: transform;
+  }
+  .drum-item:hover:not(.active) { color: var(--text); background: rgba(255,255,255,0.02); }
+
+  /* Gold left-edge accent bar — hidden by default */
+  .drum-item::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 10px; bottom: 10px;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background: var(--gold);
+    opacity: 0;
+    transition: opacity 0.18s ease;
+  }
+
+  .drum-item.active {
+    color: var(--gold-light);
+    background: linear-gradient(90deg, rgba(200,155,60,0.10) 0%, rgba(200,155,60,0.03) 60%, transparent 100%);
+    transform: scaleX(1.025) scaleY(1.04);
+    font-size: 14.5px;
+    font-weight: 700;
+  }
+  .drum-item.active::before { opacity: 1; }
+
+  .champ-img {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--border-gold);
+    flex-shrink: 0;
+    background: var(--bg-card);
+    /* Use box-shadow only — border-color transition was causing the flicker */
+    transition: box-shadow 0.18s ease, border-color 0.18s ease, width 0.18s ease, height 0.18s ease;
+  }
+  .drum-item.active .champ-img,
+  .drum-item.active div.champ-img {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(200,155,60,0.35), 0 0 14px rgba(200,155,60,0.45);
+    width: 40px; height: 40px;
+  }
+
+  .champ-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'Exo 2', sans-serif;
+    background: rgba(255,255,255,0.05);
+    padding: 2px 7px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+  .drum-item.active .champ-count {
+    background: rgba(200,155,60,0.15);
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  /* Nav arrows — hidden, navigation via scroll/wheel/click only */
+  .drum-nav { display: none; }
+
+  /* Detail panel */
+  .detail {
+    flex: 1;
+    overflow-y: auto;
+    padding: 30px 40px;
+  }
+  .detail::-webkit-scrollbar { width: 6px; }
+  .detail::-webkit-scrollbar-track { background: transparent; }
+  .detail::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+
+  .detail-empty {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    color: var(--text-dim);
+    font-family: 'Exo 2', sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-size: 13px;
+  }
+  .detail-empty .big-icon { font-size: 60px; opacity: 0.2; }
+
+  .detail-header {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    margin-bottom: 30px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-gold);
+    /* Stick to top of the scrollable .detail panel */
+    position: sticky;
+    top: -30px;       /* cancels the 30px top padding of .detail */
+    z-index: 20;
+    background: var(--bg-deep);
+    /* Stretch edge-to-edge so background covers full width */
+    margin-left: -40px;
+    margin-right: -40px;
+    padding-left: 40px;
+    padding-right: 40px;
+    padding-top: 30px;
+    margin-top: -30px;
+  }
+
+  .detail-champ-img {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--gold-dim);
+    box-shadow: 0 0 20px rgba(200,155,60,0.2), 0 0 40px rgba(200,155,60,0.08);
+  }
+
+  .detail-champ-name {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 26px;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(200,155,60,0.3);
+  }
+  .detail-champ-sub {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  /* ── RELIC FILTER — inline in detail header area ── */
+  .relic-filter-panel {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 8px 24px;
+    border-bottom: 1px solid var(--border-gold);
+    background: rgba(0,0,0,0.22);
+    position: relative;
+    z-index: 50;
+  }
+  .relic-filter-label {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Active pills row — pills appear here as relics are picked */
+  .relic-pills-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .relic-slot-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 8px 3px 9px;
+    border-radius: 14px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .relic-slot-pill.epic       { background: var(--epic-bg);        border: 1px solid var(--epic-border);        color: var(--epic); }
+  .relic-slot-pill.rare       { background: var(--rare-bg);        border: 1px solid var(--rare-border);        color: var(--rare); }
+  .relic-slot-pill.common     { background: var(--common-bg);      border: 1px solid var(--common-border);      color: var(--common); }
+  .relic-slot-pill.consumable { background: var(--consumable-bg);  border: 1px solid var(--consumable-border);  color: var(--consumable); }
+  .relic-slot-pill-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+  .relic-pill-x {
+    margin-left: 1px;
+    font-size: 10px;
+    opacity: 0.6;
+    cursor: pointer;
+    line-height: 1;
+    padding: 1px 2px;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+  .relic-pill-x:hover { opacity: 1; }
+
+  /* The one search input */
+  .relic-input-wrap {
+    position: relative;
+    flex-shrink: 0;
+  }
+  .relic-input-wrap input {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-gold);
+    color: var(--text);
+    padding: 5px 26px 5px 28px;
+    border-radius: 6px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    width: 180px;
+    outline: none;
+    transition: border-color 0.2s, width 0.2s;
+  }
+  .relic-input-wrap input:focus { border-color: var(--gold-dim); width: 220px; }
+  .relic-input-wrap input::placeholder { color: var(--text-dim); }
+  .relic-input-search-icon {
+    position: absolute; left: 9px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px; color: var(--text-dim); pointer-events: none;
+  }
+  .relic-input-clear {
+    position: absolute; right: 8px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 11px; color: var(--text-dim);
+    cursor: pointer; line-height: 1;
+    display: none;
+    background: none; border: none; padding: 0;
+    transition: color 0.15s;
+  }
+  .relic-input-clear:hover { color: var(--text); }
+  .relic-input-wrap.has-text .relic-input-clear { display: block; }
+
+  /* Autocomplete dropdown — fixed so it escapes all overflow/clip contexts */
+  .relic-autocomplete {
+    position: fixed;
+    top: auto; /* set by JS */
+    left: auto; /* set by JS */
+    min-width: 280px;
+    background: #0d1119;
+    border: 1px solid var(--border-gold);
+    border-radius: 8px;
+    max-height: 280px;
+    overflow-y: auto;
+    z-index: 9000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.85);
+    display: none;
+  }
+  .relic-autocomplete.open { display: block; }
+  .relic-autocomplete::-webkit-scrollbar { width: 4px; }
+  .relic-autocomplete::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 2px; }
+  .relic-ac-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 1px solid rgba(42,34,21,0.3);
+    transition: background 0.12s;
+  }
+  .relic-ac-item:last-child { border-bottom: none; }
+  .relic-ac-item:hover { background: var(--bg-hover); }
+  .relic-ac-item.disabled { opacity: 0.3; pointer-events: none; }
+  .relic-ac-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .relic-ac-count {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.05);
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-family: 'Exo 2', sans-serif;
+    flex-shrink: 0;
+  }
+
+  /* Highlight matched relic badge — border glow only, text color unchanged */
+  .relic-badge.filter-match {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 1px var(--gold), 0 0 8px rgba(200,155,60,0.55) !important;
+  }
+
+  .builds-grid { display: flex; flex-direction: column; gap: 14px; }
+
+  .build-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 18px 20px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    animation: fadeIn 0.3s ease forwards;
+    opacity: 0;
+    overflow: visible;
+    cursor: pointer;
+  }
+  .build-card:hover {
+    border-color: var(--gold-dim);
+    box-shadow: 0 4px 20px rgba(200,155,60,0.08);
+  }
+  .build-card.selected {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 2px rgba(200,155,60,0.7), 0 0 20px rgba(200,155,60,0.25) !important;
+    opacity: 1 !important;
+  }
+  .build-card.jump-highlight {
+    animation: jumpPulse 1s ease forwards !important;
+    opacity: 1 !important;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes jumpPulse {
+    0%   { border-color: var(--gold); box-shadow: 0 0 0 3px var(--gold), 0 0 40px rgba(200,155,60,0.7); }
+    100% { border-color: var(--gold); box-shadow: 0 0 0 2px rgba(200,155,60,0.7), 0 0 20px rgba(200,155,60,0.25); }
+  }
+
+  .build-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    overflow: visible;
+  }
+
+  .relic-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    position: relative;
+    cursor: default;
+  }
+  .relic-badge.epic       { background: var(--epic-bg);        border: 1px solid var(--epic-border);        color: var(--epic);        text-shadow: 0 0 8px rgba(224,96,255,0.4); }
+  .relic-badge.rare       { background: var(--rare-bg);        border: 1px solid var(--rare-border);        color: var(--rare);        text-shadow: 0 0 8px rgba(74,158,255,0.4); }
+  .relic-badge.common     { background: var(--common-bg);      border: 1px solid var(--common-border);      color: var(--common);      text-shadow: 0 0 8px rgba(80,208,96,0.4); }
+  .relic-badge.consumable { background: var(--consumable-bg);  border: 1px solid var(--consumable-border);  color: var(--consumable);  text-shadow: 0 0 8px rgba(255,154,46,0.5); animation: consumable-pulse 2.5s ease-in-out infinite; }
+  @keyframes consumable-pulse {
+    0%, 100% { box-shadow: 0 0 4px rgba(255,154,46,0.3); }
+    50%       { box-shadow: 0 0 12px rgba(255,154,46,0.7), 0 0 20px rgba(255,154,46,0.2); }
+  }
+
+  .relic-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .relic-badge.epic        .relic-dot { background: var(--epic);        box-shadow: 0 0 4px var(--epic); }
+  .relic-badge.rare        .relic-dot { background: var(--rare);        box-shadow: 0 0 4px var(--rare); }
+  .relic-badge.common      .relic-dot { background: var(--common);      box-shadow: 0 0 4px var(--common); }
+  .relic-badge.consumable  .relic-dot { background: var(--consumable);  box-shadow: 0 0 4px var(--consumable); }
+
+  /* ── RELIC TOOLTIP ── */
+  #relicTooltip {
+    display: none;
+    position: fixed;
+    z-index: 9999;
+    width: 460px;
+    background: #111827;
+    border: 1px solid rgba(200,155,60,0.45);
+    border-radius: 14px;
+    padding: 20px 22px;
+    box-shadow: 0 16px 56px rgba(0,0,0,0.95), 0 0 0 1px rgba(200,155,60,0.1);
+    pointer-events: none;
+    font-family: 'Exo 2', sans-serif;
+    text-align: left;
+  }
+  #relicTooltip.visible { display: block; }
+  #relicTooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%; left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: rgba(200,155,60,0.45);
+  }
+  .rtt-name {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 26px; font-weight: 700;
+    margin-bottom: 4px;
+    line-height: 1.2;
+  }
+  .rtt-tier-row {
+    display: flex; align-items: center; gap: 7px;
+    margin-bottom: 12px;
+    font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase;
+    color: #a09880;
+  }
+  .rtt-tier-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .rtt-desc {
+    font-size: 17px;
+    color: #e8dfc8;
+    line-height: 1.65;
+    margin-bottom: 0;
+    font-weight: 500;
+  }
+  .rtt-source {
+    margin-top: 12px;
+    font-size: 15px;
+    color: #c89b3c;
+    border-top: 1px solid rgba(200,155,60,0.2);
+    padding-top: 10px;
+    line-height: 1.6;
+  }
+  .rtt-source b { color: #f0d080; }
+  .rtt-glory {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #c0b090;
+    font-style: italic;
+  }
+  .rtt-champion {
+    margin-top: 10px;
+    font-size: 15px;
+    color: #a09880;
+  }
+  .rtt-champion b { color: #e8dfc8; }
+  .rtt-consumable-note {
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--consumable);
+    border-top: 1px solid var(--consumable-border);
+    padding-top: 10px;
+    line-height: 1.55;
+  }
+
+  /* ── KEYWORD HIGHLIGHT & GLOSSARY ── */
+  .kw-highlight {
+    color: #f0d080;
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(200,155,60,0.6);
+    border-bottom: 1px dotted rgba(200,155,60,0.5);
+    cursor: help;
+  }
+
+  .kw-mechanic {
+    color: #7ab8ff;
+    font-weight: 700;
+    text-shadow: 0 0 8px rgba(74,158,255,0.5);
+    border-bottom: 1px dotted rgba(74,158,255,0.4);
+  }
+
+  .rtt-keywords {
+    margin-top: 12px;
+    border-top: 1px solid rgba(200,155,60,0.25);
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .rtt-keywords-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8a7a55;
+    margin-bottom: 4px;
+  }
+  .rtt-kw-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(200,155,60,0.18);
+    border-radius: 8px;
+    padding: 8px 12px;
+  }
+  .rtt-kw-icon { font-size: 18px; flex-shrink: 0; line-height: 1.5; }
+  .rtt-kw-body { flex: 1; min-width: 0; }
+  .rtt-kw-name {
+    color: #f0d080;
+    font-weight: 700;
+    font-size: 16px;
+    font-family: 'Rajdhani', sans-serif;
+    line-height: 1.3;
+  }
+  .rtt-kw-desc {
+    color: #c8bfa8;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 2px;
+  }
+
+  .build-bottom { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+  .star-level {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Exo 2', sans-serif; font-size: 13px;
+    color: var(--gold); font-weight: 600;
+    background: rgba(200,155,60,0.08);
+    border: 1px solid rgba(200,155,60,0.2);
+    padding: 4px 12px; border-radius: 20px;
+  }
+
+  .players-row {
+    margin-top: 10px;
+    display: flex; flex-wrap: wrap; gap: 6px; align-items: center;
+  }
+  .players-label {
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
+  }
+  .player-chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 2px 10px; border-radius: 12px;
+    font-size: 12px; color: var(--text); font-family: 'Exo 2', sans-serif;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
+  }
+  .player-chip:hover {
+    background: rgba(200,155,60,0.15);
+    border-color: var(--gold-dim);
+    color: var(--gold-light);
+  }
+
+  /* ── PLAYER DRAWER ── */
+  #playerDrawer {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: 380px;
+    background: var(--bg-panel);
+    border-left: 1px solid var(--border-gold);
+    box-shadow: -12px 0 48px rgba(0,0,0,0.85);
+    z-index: 8000;
+    display: flex;
+    flex-direction: column;
+    transform: translateX(100%);
+    transition: transform 0.28s cubic-bezier(0.4,0,0.2,1);
+  }
+  #playerDrawer.open { transform: translateX(0); }
+
+  #playerDrawerOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 7999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.28s ease;
+  }
+  #playerDrawerOverlay.open { opacity: 1; pointer-events: all; }
+
+  .pd-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border-gold);
+    background: linear-gradient(180deg, rgba(200,155,60,0.07) 0%, transparent 100%);
+    flex-shrink: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .pd-header-text { flex: 1; min-width: 0; }
+  .pd-title {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 15px;
+    color: var(--gold);
+    letter-spacing: 1px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .pd-subtitle {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .pd-close {
+    background: none; border: none;
+    color: var(--text-dim); font-size: 18px;
+    cursor: pointer; padding: 2px 4px;
+    transition: color 0.15s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .pd-close:hover { color: var(--text); }
+
+  .pd-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 14px 20px;
+  }
+  .pd-body::-webkit-scrollbar { width: 5px; }
+  .pd-body::-webkit-scrollbar-track { background: transparent; }
+  .pd-body::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+
+  .pd-champ-group { margin-bottom: 16px; }
+  .pd-champ-label {
+    display: flex; align-items: center; gap: 9px;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; font-weight: 700;
+    color: var(--text-dim);
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 7px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pd-champ-label img {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border-gold);
+  }
+
+  .pd-build-row {
+    display: flex; align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    margin-bottom: 7px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+    position: relative;
+  }
+  .pd-build-row:hover {
+    border-color: var(--gold-dim);
+    background: var(--bg-hover);
+    box-shadow: 0 0 12px rgba(200,155,60,0.1);
+  }
+  .pd-build-relics {
+    display: flex; flex-wrap: wrap; gap: 4px;
+    flex: 1;
+    min-width: 0;
+  }
+  .pd-build-star {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 11px;
+    color: var(--gold);
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-top: 3px;
+  }
+  .pd-build-jump {
+    font-size: 10px;
+    color: var(--text-dim);
+    font-family: 'Exo 2', sans-serif;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 5px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .pd-build-jump::after { content: '→'; }
+
+  /* ── TOP NAV (tabs + legend) ── */
+  .top-nav {
+    position: relative; z-index: 10;
+    display: flex; align-items: center; gap: 0;
+    border-bottom: 1px solid var(--border-gold);
+    background: rgba(0,0,0,0.3);
+    flex-shrink: 0;
+  }
+  .tab-btn {
+    padding: 10px 24px;
+    background: none; border: none;
+    color: var(--text-dim);
+    font-family: 'Exo 2', sans-serif;
+    font-size: 12px; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--gold); border-bottom-color: var(--gold); }
+  .legend {
+    display: flex; gap: 20px; align-items: center;
+    padding: 10px 24px;
+    font-size: 12px; letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Exo 2', sans-serif;
+    margin-left: auto;
+  }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .legend-dot.epic { background: var(--epic); box-shadow: 0 0 6px var(--epic); }
+  .legend-dot.rare { background: var(--rare); box-shadow: 0 0 6px var(--rare); }
+  .legend-dot.common { background: var(--common); box-shadow: 0 0 6px var(--common); }
+  .legend-dot.consumable { background: var(--consumable); box-shadow: 0 0 6px var(--consumable); }
+
+  /* ── RELIC INDEX ── */
+  .relic-index-root {
+    display: flex; flex-direction: column;
+    flex: 1; min-height: 0; overflow: hidden;
+    position: relative; z-index: 10;
+  }
+  .ri-toolbar {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 24px;
+    border-bottom: 1px solid var(--border-gold);
+    background: rgba(0,0,0,0.22);
+    flex-shrink: 0; flex-wrap: wrap;
+  }
+  .ri-tier-filters { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ri-tier-btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 5px 14px; border-radius: 20px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-gold);
+    color: var(--text-dim);
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    font-weight: 600; letter-spacing: 1px; text-transform: uppercase;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .ri-tier-btn:hover { color: var(--text); background: rgba(255,255,255,0.08); }
+  .ri-tier-btn.active[data-tier="all"]         { background: rgba(200,155,60,0.15); border-color: var(--gold-dim); color: var(--gold); }
+  .ri-tier-btn.active[data-tier="epic"]        { background: var(--epic-bg); border-color: var(--epic-border); color: var(--epic); }
+  .ri-tier-btn.active[data-tier="rare"]        { background: var(--rare-bg); border-color: var(--rare-border); color: var(--rare); }
+  .ri-tier-btn.active[data-tier="common"]      { background: var(--common-bg); border-color: var(--common-border); color: var(--common); }
+  .ri-tier-btn.active[data-tier="consumable"]  { background: var(--consumable-bg); border-color: var(--consumable-border); color: var(--consumable); }
+  .ri-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .ri-dot.epic        { background: var(--epic); box-shadow: 0 0 4px var(--epic); }
+  .ri-dot.rare        { background: var(--rare); box-shadow: 0 0 4px var(--rare); }
+  .ri-dot.common      { background: var(--common); box-shadow: 0 0 4px var(--common); }
+  .ri-dot.consumable  { background: var(--consumable); box-shadow: 0 0 4px var(--consumable); }
+  .ri-search-wrap {
+    position: relative; flex-shrink: 0;
+  }
+  .ri-search-wrap .kcs-box {
+    width: 220px;
+  }
+
+  /* Relic Index autocomplete dropdown */
+  .ri-autocomplete {
+    position: fixed;
+    display: none;
+    background: #0d1119;
+    border: 1px solid var(--border-gold);
+    border-radius: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    z-index: 9000;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.85);
+    min-width: 240px;
+  }
+  .ri-autocomplete.open { display: block; }
+  .ri-autocomplete::-webkit-scrollbar { width: 4px; }
+  .ri-autocomplete::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 2px; }
+  .ri-ac-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; font-weight: 600;
+    color: #e8dfc8;
+    border-bottom: 1px solid rgba(42,34,21,0.3);
+    transition: background 0.12s;
+  }
+  .ri-ac-item:last-child { border-bottom: none; }
+  .ri-ac-item:hover { background: var(--bg-hover); }
+  .ri-ac-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .ri-ac-icon { width: 28px; height: 28px; object-fit: contain; flex-shrink: 0; }
+  .ri-ac-tier {
+    margin-left: auto; font-size: 10px; color: var(--text-dim);
+    font-family: 'Exo 2', sans-serif; letter-spacing: 0.5px;
+    text-transform: uppercase; flex-shrink: 0;
+  }
+
+  /* ── Keyword chip search system ── */
+  .kcs-wrap {
+    display: flex; flex-wrap: wrap; align-items: center;
+    gap: 4px; position: relative;
+  }
+  .kcs-chips {
+    display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+  }
+  .kcs-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 7px 2px 8px; border-radius: 20px;
+    font-family: 'Exo 2', sans-serif; font-size: 10px; font-weight: 600;
+    letter-spacing: 0.5px; cursor: default; user-select: none;
+    white-space: nowrap;
+  }
+  .kcs-chip.kw  { background: rgba(200,155,60,0.18); border: 1px solid rgba(200,155,60,0.5); color: var(--gold-light); }
+  .kcs-chip.mec { background: rgba(74,158,255,0.15); border: 1px solid rgba(74,158,255,0.45); color: #7ab8ff; }
+  .kcs-chip.rel { background: rgba(224,96,255,0.12); border: 1px solid rgba(224,96,255,0.4); color: var(--epic); }
+  .kcs-chip.champ { background: rgba(80,208,96,0.12); border: 1px solid rgba(80,208,96,0.35); color: var(--common); }
+  .kcs-chip-x {
+    font-size: 11px; opacity: 0.7; cursor: pointer; line-height: 1;
+    margin-left: 1px;
+  }
+  .kcs-chip-x:hover { opacity: 1; }
+  .kcs-input {
+    background: none; border: none; outline: none;
+    color: var(--text); font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; min-width: 80px; flex: 1;
+    padding: 4px 2px;
+  }
+  .kcs-input::placeholder { color: var(--text-dim); }
+  .kcs-box {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border-gold);
+    border-radius: 8px; padding: 4px 28px 4px 8px;
+    cursor: text; transition: border-color 0.2s; position: relative;
+    min-height: 34px;
+  }
+  .kcs-box:focus-within { border-color: var(--gold-dim); }
+  .kcs-clear {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    background: none; border: none; color: var(--text-dim); font-size: 12px;
+    cursor: pointer; padding: 0; line-height: 1; display: none;
+  }
+  .kcs-clear:hover { color: var(--text); }
+  .kcs-box.has-content .kcs-clear { display: block; }
+  .kcs-dropdown {
+    position: fixed; display: none;
+    background: #0d1119; border: 1px solid var(--border-gold);
+    border-radius: 8px; max-height: 280px; overflow-y: auto;
+    z-index: 9100; box-shadow: 0 8px 32px rgba(0,0,0,0.85);
+    min-width: 240px;
+  }
+  .kcs-dropdown.open { display: block; }
+  .kcs-dropdown::-webkit-scrollbar { width: 4px; }
+  .kcs-dropdown::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 2px; }
+  .kcs-section-label {
+    padding: 5px 12px 3px;
+    font-family: 'Exo 2', sans-serif; font-size: 9px; letter-spacing: 2px;
+    text-transform: uppercase; color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+  }
+  .kcs-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px; cursor: pointer;
+    font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 600;
+    color: #e8dfc8; border-bottom: 1px solid rgba(42,34,21,0.25);
+    transition: background 0.1s;
+  }
+  .kcs-item:last-child { border-bottom: none; }
+  .kcs-item:hover { background: var(--bg-hover); }
+  .kcs-item.already { opacity: 0.4; pointer-events: none; }
+  .kcs-item-icon { font-size: 14px; flex-shrink: 0; width: 20px; text-align: center; }
+  .kcs-item-img { width: 26px; height: 26px; object-fit: contain; border-radius: 4px; flex-shrink: 0; }
+  .kcs-item-label { flex: 1; min-width: 0; }
+  .kcs-item-sub { font-size: 10px; font-family: 'Exo 2', sans-serif; color: var(--text-dim); margin-left: auto; text-transform: uppercase; letter-spacing: 0.5px; flex-shrink: 0; }
+
+  /* ── Keyword hover popup — appears in grid area when hovering detail panel ── */
+  .ri-build-row { position: relative; }
+  .ri-build-row-inner { display: flex; }
+  .ri-build-main { flex: 1; min-width: 0; }
+
+  .ri-kw-popup {
+    display: none;
+    position: fixed;
+    z-index: 8000;
+    width: 260px;
+    background: #111827;
+    border: 1px solid rgba(200,155,60,0.4);
+    border-radius: 10px;
+    padding: 10px 12px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.9);
+    pointer-events: none;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ri-kw-popup.visible { display: flex; }
+  .ri-kw-popup-title {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 10px; letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #8a7a55;
+    margin-bottom: 2px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid rgba(200,155,60,0.15);
+  }
+  .ri-kw-popup-chip {
+    display: flex; align-items: flex-start; gap: 7px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(200,155,60,0.12);
+    border-radius: 6px;
+    padding: 6px 8px;
+  }
+  .ri-kw-popup-icon { font-size: 15px; flex-shrink: 0; line-height: 1.4; }
+  .ri-kw-popup-body { flex: 1; min-width: 0; }
+  .ri-kw-popup-name {
+    color: #f0d080; font-weight: 700;
+    font-size: 13px; font-family: 'Rajdhani', sans-serif;
+    line-height: 1.2;
+  }
+  .ri-kw-popup-desc {
+    color: #c8bfa8; font-size: 11px;
+    line-height: 1.4; margin-top: 2px;
+  }
+  .ri-sort-wrap {
+    display: flex; align-items: center; gap: 7px; flex-shrink: 0;
+  }
+  .ri-sort-label {
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
+  }
+  .ri-sort-wrap select {
+    background: #1a2236;
+    border: 1px solid var(--border-gold);
+    color: #e8dfc8;
+    padding: 5px 10px;
+    border-radius: 6px; font-family: 'Rajdhani', sans-serif;
+    font-size: 13px; outline: none; cursor: pointer;
+  }
+  .ri-sort-wrap select option {
+    background: #1a2236;
+    color: #e8dfc8;
+  }
+  .ri-count {
+    margin-left: auto;
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    color: var(--text-dim); letter-spacing: 1px;
+  }
+  .ri-body {
+    display: flex; flex: 1; min-height: 0; overflow: hidden;
+  }
+  /* grid of relic cards */
+  .ri-grid {
+    flex: 1; overflow-y: auto;
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    align-content: start;
+  }
+  .ri-grid::-webkit-scrollbar { width: 6px; }
+  .ri-grid::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+  .ri-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 10px;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
+    text-align: center;
+    position: relative;
+  }
+  .ri-card:hover {
+    border-color: var(--gold-dim);
+    box-shadow: 0 4px 16px rgba(200,155,60,0.1);
+    transform: translateY(-1px);
+  }
+  .ri-card.active {
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 0 1px var(--gold), 0 4px 20px rgba(200,155,60,0.2) !important;
+  }
+  .ri-card.epic        { border-color: var(--epic-border); }
+  .ri-card.rare        { border-color: var(--rare-border); }
+  .ri-card.common      { border-color: var(--common-border); }
+  .ri-card.consumable  { border-color: var(--consumable-border); }
+  .ri-card-icon {
+    width: 72px; height: 72px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .ri-card-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .ri-card-icon-placeholder { font-size: 30px; opacity: 0.3; }
+  .ri-card-name {
+    font-family: 'Rajdhani', sans-serif; font-weight: 600;
+    font-size: 12px; line-height: 1.3;
+    color: var(--text);
+  }
+  .ri-card-tier-dot {
+    position: absolute; top: 8px; right: 8px;
+    width: 7px; height: 7px; border-radius: 50%;
+  }
+  .ri-card-uses {
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    color: var(--text-dim);
+    background: rgba(255,255,255,0.05);
+    padding: 2px 8px; border-radius: 10px;
+  }
+  .ri-card.epic   .ri-card-uses { color: var(--epic);   background: var(--epic-bg); }
+  .ri-card.rare   .ri-card-uses { color: var(--rare);   background: var(--rare-bg); }
+  .ri-card.common .ri-card-uses { color: var(--common); background: var(--common-bg); }
+  .ri-card.consumable .ri-card-uses { color: var(--consumable); background: var(--consumable-bg); }
+
+  /* relic detail side panel */
+  .ri-detail-panel {
+    width: 380px; flex-shrink: 0;
+    border-left: 1px solid var(--border-gold);
+    overflow-y: auto;
+    padding: 24px 20px;
+    background: rgba(0,0,0,0.2);
+  }
+  .ri-detail-panel::-webkit-scrollbar { width: 6px; }
+  .ri-detail-panel::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius: 3px; }
+  .ri-detail-empty {
+    height: 100%; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    color: var(--text-dim); font-family: 'Exo 2', sans-serif;
+    font-size: 12px; letter-spacing: 2px; text-transform: uppercase;
+  }
+  .ri-detail-header {
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 16px; padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-gold);
+  }
+  .ri-detail-icon {
+    width: 80px; height: 80px; flex-shrink: 0;
+  }
+  .ri-detail-icon img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .ri-detail-name {
+    font-family: 'Rajdhani', sans-serif; font-weight: 700;
+    font-size: 18px; line-height: 1.2;
+  }
+  .ri-detail-meta {
+    display: flex; align-items: center; gap: 6px; margin-top: 4px;
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-dim);
+  }
+  .ri-detail-desc {
+    font-family: 'Exo 2', sans-serif; font-size: 13px;
+    color: var(--text); line-height: 1.6; margin-bottom: 12px;
+  }
+  .ri-detail-source {
+    font-family: 'Exo 2', sans-serif; font-size: 12px;
+    color: var(--gold-dim); line-height: 1.5;
+    border-top: 1px solid var(--border); padding-top: 10px; margin-bottom: 16px;
+  }
+  .ri-detail-source b { color: var(--gold); }
+  .ri-detail-builds-title {
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 10px;
+  }
+  .ri-build-row {
+    background: var(--bg-card); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px 14px; margin-bottom: 8px;
+    animation: fadeIn 0.25s ease forwards; opacity: 0;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .ri-build-row:hover {
+    border-color: var(--gold-dim);
+    box-shadow: 0 2px 12px rgba(200,155,60,0.1);
+  }
+  .ri-build-champ {
+    font-family: 'Rajdhani', sans-serif; font-weight: 700;
+    font-size: 14px; color: var(--gold); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .ri-build-champ img {
+    width: 24px; height: 24px; border-radius: 50%;
+    object-fit: cover; border: 1px solid var(--border-gold);
+  }
+  .ri-build-relics {
+    display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 6px;
+  }
+  .ri-build-star {
+    font-family: 'Exo 2', sans-serif; font-size: 11px;
+    color: var(--gold); background: rgba(200,155,60,0.08);
+    border: 1px solid rgba(200,155,60,0.2);
+    padding: 2px 8px; border-radius: 10px; display: inline-block;
+    margin-bottom: 5px;
+  }
+  .ri-build-players {
+    display: flex; flex-wrap: wrap; gap: 4px; align-items: center;
+  }
+  .ri-build-players-label {
+    font-family: 'Exo 2', sans-serif; font-size: 10px;
+    color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  /* ══════════════════════════════════════════════════════
+     TIER LIST PANEL
+  ══════════════════════════════════════════════════════ */
+  .tl-root {
+    flex: 1; display: flex; min-height: 0;
+    overflow: hidden;
+    background: var(--bg-deep);
+  }
+
+  /* Sidebar */
+  .tl-sidebar {
+    width: 230px; flex-shrink: 0;
+    border-right: 1px solid var(--border-gold);
+    background: rgba(0,0,0,0.3);
+    overflow-y: auto; padding: 12px 10px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .tl-sidebar::-webkit-scrollbar { width: 4px; }
+  .tl-sidebar::-webkit-scrollbar-thumb { background: var(--border-gold); border-radius:2px; }
+  .tl-sidebar-section { display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
+  .tl-section-title {
+    font-family:'Exo 2',sans-serif; font-size:10px;
+    letter-spacing:2px; text-transform:uppercase;
+    color: var(--gold-dim); padding: 4px 0 2px;
+    border-bottom:1px solid var(--border); margin-bottom:4px;
+  }
+  .tl-preset-btn {
+    display:flex; align-items:center; gap:10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius:8px; padding:8px 10px;
+    cursor:pointer; text-align:left; width:100%;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .tl-preset-btn:hover { border-color: var(--gold-dim); background: rgba(200,155,60,0.06); }
+  .tl-preset-btn.active { border-color: var(--gold); background: rgba(200,155,60,0.1); }
+  .tl-preset-icon { font-size:20px; flex-shrink:0; }
+  .tl-preset-name { font-family:'Rajdhani',sans-serif; font-weight:700; font-size:13px; color:var(--text); }
+  .tl-preset-desc { font-family:'Exo 2',sans-serif; font-size:10px; color:var(--text-dim); margin-top:1px; }
+  .tl-label { font-family:'Exo 2',sans-serif; font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--text-dim); }
+  .tl-toggle-group { display:flex; gap:4px; }
+  .tl-toggle {
+    flex:1; padding:5px 4px; font-family:'Exo 2',sans-serif; font-size:10px;
+    letter-spacing:0.5px; text-transform:uppercase;
+    background:rgba(255,255,255,0.04); border:1px solid var(--border);
+    color:var(--text-dim); border-radius:5px; cursor:pointer;
+    transition: all 0.15s;
+  }
+  .tl-toggle:hover { color:var(--text); border-color:var(--border-gold); }
+  .tl-toggle.active { background:rgba(200,155,60,0.15); border-color:var(--gold-dim); color:var(--gold); }
+  .tl-action-btn {
+    width:100%; padding:7px 10px;
+    font-family:'Exo 2',sans-serif; font-size:11px; letter-spacing:1px; text-transform:uppercase;
+    background:rgba(255,255,255,0.04); border:1px solid var(--border);
+    color:var(--text-dim); border-radius:6px; cursor:pointer;
+    transition: all 0.15s; text-align:left;
+  }
+  .tl-action-btn:hover { color:var(--text); border-color:var(--border-gold); background:rgba(255,255,255,0.07); }
+  .tl-action-btn.gold { border-color:var(--gold-dim); color:var(--gold); background:rgba(200,155,60,0.08); }
+  .tl-action-btn.gold:hover { background:rgba(200,155,60,0.15); }
+
+  /* Main area */
+  .tl-main {
+    flex:1; display:flex; flex-direction:column;
+    min-height:0; overflow-y:auto; padding:16px 20px;
+  }
+  .tl-main::-webkit-scrollbar { width:6px; }
+  .tl-main::-webkit-scrollbar-thumb { background:var(--border-gold); border-radius:3px; }
+
+  .tl-title-bar {
+    display:flex; align-items:center; gap:16px;
+    margin-bottom:10px; flex-shrink:0;
+  }
+  .tl-title-input {
+    font-family:'Cinzel Decorative',serif; font-size:18px; color:var(--gold);
+    background:none; border:none; border-bottom:1px solid var(--border-gold);
+    outline:none; padding:4px 0; flex:1; max-width:400px;
+  }
+  .tl-title-input:focus { border-bottom-color:var(--gold); }
+
+  /* Tier rows */
+  .tl-tiers { display:flex; flex-direction:column; gap:3px; flex-shrink:0; }
+  .tl-tier {
+    display:flex; align-items:stretch; min-height:72px;
+    border-radius:6px; overflow:visible;
+    border:1px solid rgba(255,255,255,0.06);
+    position:relative;
+  }
+  .tl-tier.drag-over .tl-tier-items { background:rgba(200,155,60,0.1); outline:2px dashed var(--gold-dim); }
+
+  .tl-tier-label-wrap {
+    width:90px; flex-shrink:0; display:flex; flex-direction:column;
+    align-items:center; justify-content:center; position:relative;
+    border-right:1px solid rgba(255,255,255,0.08);
+    cursor:pointer; user-select:none;
+    padding:4px;
+  }
+  .tl-tier-label {
+    font-family:'Rajdhani',sans-serif; font-weight:700; font-size:18px;
+    text-align:center; line-height:1.2; word-break:break-word;
+    width:100%; padding:2px 4px; border-radius:4px;
+    background:none; border:none; color:inherit; cursor:pointer;
+    text-align:center; resize:none; outline:none; font-size:15px;
+  }
+  .tl-tier-label:focus { background:rgba(0,0,0,0.3); }
+  .tl-tier-ctrl {
+    display:none; position:absolute; right:2px; top:2px;
+    flex-direction:column; gap:2px;
+  }
+  .tl-tier:hover .tl-tier-ctrl { display:flex; }
+  .tl-tier-ctrl button {
+    background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.1);
+    color:var(--text-dim); border-radius:3px; width:18px; height:18px;
+    font-size:9px; cursor:pointer; padding:0; line-height:1;
+    transition:color 0.1s;
+  }
+  .tl-tier-ctrl button:hover { color:var(--text); }
+
+  .tl-tier-items {
+    flex:1; display:flex; flex-wrap:wrap;
+    align-items:center; gap:6px; padding:6px 8px;
+    min-height:72px; border-radius:0 6px 6px 0;
+    transition:background 0.15s;
+  }
+
+  /* Items (chips) inside tiers */
+  .tl-item {
+    display:flex; flex-direction:column; align-items:center;
+    width:64px; cursor:grab; border-radius:8px;
+    padding:5px 4px 4px; gap:4px;
+    background:rgba(255,255,255,0.04);
+    border:1px solid rgba(255,255,255,0.08);
+    transition: transform 0.1s, box-shadow 0.1s, border-color 0.15s;
+    user-select:none; position:relative; flex-shrink:0;
+  }
+  .tl-item:hover { transform:translateY(-2px); box-shadow:0 4px 12px rgba(0,0,0,0.5); }
+  .tl-item.dragging { opacity:0.4; transform:scale(0.95); }
+  .tl-item.drag-target { border-color:var(--gold); box-shadow:0 0 8px rgba(200,155,60,0.4); }
+
+  @keyframes tl-dropped {
+    0%   { box-shadow:0 0 0px  rgba(200,155,60,0);   border-color:rgba(255,255,255,0.08); }
+    10%  { box-shadow:0 0 18px rgba(200,155,60,0.95); border-color:var(--gold-light); }
+    22%  { box-shadow:0 0 4px  rgba(200,155,60,0.2);  border-color:rgba(255,255,255,0.08); }
+    34%  { box-shadow:0 0 18px rgba(200,155,60,0.95); border-color:var(--gold-light); }
+    46%  { box-shadow:0 0 4px  rgba(200,155,60,0.2);  border-color:rgba(255,255,255,0.08); }
+    58%  { box-shadow:0 0 18px rgba(200,155,60,0.95); border-color:var(--gold-light); }
+    100% { box-shadow:0 0 0px  rgba(200,155,60,0);   border-color:rgba(255,255,255,0.08); }
+  }
+  .tl-item.just-dropped {
+    animation: tl-dropped 1.8s ease-out forwards;
+  }
+  .tl-item.drop-before::before {
+    content:'';
+    position:absolute; left:-5px; top:0; bottom:0; width:3px;
+    background:var(--gold); border-radius:2px;
+    box-shadow:0 0 8px rgba(200,155,60,0.8);
+  }
+  .tl-item.drop-after::after {
+    content:'';
+    position:absolute; right:-5px; top:0; bottom:0; width:3px;
+    background:var(--gold); border-radius:2px;
+    box-shadow:0 0 8px rgba(200,155,60,0.8);
+  }
+  .tl-item img { width:44px; height:44px; object-fit:contain; border-radius:50%; display:block; }
+  .tl-item .tl-item-img-relic { border-radius:6px; }
+  .tl-item-name {
+    font-family:'Rajdhani',sans-serif; font-size:9px; font-weight:600;
+    color:var(--text); text-align:center; line-height:1.2;
+    word-break:break-word; max-width:62px;
+  }
+  .tl-item-dot {
+    position:absolute; top:3px; right:3px;
+    width:6px; height:6px; border-radius:50%;
+  }
+
+  /* Tier color swatch on label */
+  .tl-tier[data-color="S"]  .tl-tier-label-wrap { background:#ff7f7f22; color:#ff7f7f; }
+  .tl-tier[data-color="A"]  .tl-tier-label-wrap { background:#ffbf7f22; color:#ffbf7f; }
+  .tl-tier[data-color="B"]  .tl-tier-label-wrap { background:#ffdf7f22; color:#ffdf7f; }
+  .tl-tier[data-color="C"]  .tl-tier-label-wrap { background:#7fff7f22; color:#7fff7f; }
+  .tl-tier[data-color="D"]  .tl-tier-label-wrap { background:#7fbfff22; color:#7fbfff; }
+  .tl-tier[data-color="F"]  .tl-tier-label-wrap { background:#bf7fff22; color:#bf7fff; }
+  .tl-tier[data-color="custom1"] .tl-tier-label-wrap { background:rgba(200,155,60,0.15); color:var(--gold); }
+
+  /* Tier drag handle */
+  .tl-drag-handle {
+    font-size: 16px;
+    color: rgba(255,255,255,0.25);
+    cursor: grab;
+    line-height: 1;
+    margin-bottom: 2px;
+    user-select: none;
+  }
+  .tl-drag-handle:active { cursor: grabbing; }
+  .tl-tier-label-wrap:hover .tl-drag-handle { color: rgba(255,255,255,0.5); }
+
+  /* Tier dragging states */
+  .tl-tier.tier-dragging { opacity: 0.45; }
+  .tl-tier.tier-drag-over { outline: 2px dashed var(--gold-dim); outline-offset: 2px; }
+
+  /* Item detail popup */
+  .tl-item-popup-overlay {
+    position:fixed; inset:0; z-index:9800;
+    background:rgba(0,0,0,0.7);
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(3px);
+    animation: tl-overlay-in 0.15s ease;
+  }
+  @keyframes tl-overlay-in { from { opacity:0; } to { opacity:1; } }
+  .tl-item-popup {
+    position:relative;
+    background: linear-gradient(160deg, #111827 0%, #0d1119 100%);
+    border:1px solid var(--border-gold);
+    border-radius:16px;
+    padding:28px 28px 24px;
+    width:380px; max-width:92vw;
+    box-shadow:0 24px 64px rgba(0,0,0,0.95), 0 0 0 1px rgba(200,155,60,0.12);
+    animation: tl-popup-in 0.18s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes tl-popup-in { from { opacity:0; transform:scale(0.92); } to { opacity:1; transform:scale(1); } }
+  .tl-item-popup-close {
+    position:absolute; top:14px; right:16px;
+    background:none; border:none; color:var(--text-dim);
+    font-size:18px; cursor:pointer; line-height:1; padding:2px 6px;
+    border-radius:4px; transition:color 0.15s, background 0.15s;
+  }
+  .tl-item-popup-close:hover { color:var(--text); background:rgba(255,255,255,0.08); }
+  .tl-item-popup-header {
+    display:flex; align-items:center; gap:18px; margin-bottom:18px;
+  }
+  .tl-item-popup-img {
+    width:80px; height:80px; object-fit:contain; border-radius:10px;
+    flex-shrink:0; background:rgba(255,255,255,0.04);
+    border:1px solid var(--border-gold);
+    padding:4px;
+  }
+  .tl-item-popup-img-placeholder {
+    width:80px; height:80px; border-radius:10px; flex-shrink:0;
+    display:flex; align-items:center; justify-content:center;
+    font-size:38px; background:rgba(255,255,255,0.04);
+    border:1px solid var(--border-gold);
+  }
+  .tl-item-popup-title-wrap { min-width:0; }
+  .tl-item-popup-name {
+    font-family:'Cinzel Decorative',serif; font-size:15px;
+    color:var(--gold); line-height:1.3; margin-bottom:5px;
+  }
+  .tl-item-popup-badge {
+    display:inline-block; font-family:'Exo 2',sans-serif;
+    font-size:10px; letter-spacing:1.5px; text-transform:uppercase;
+    padding:2px 8px; border-radius:20px; font-weight:600;
+  }
+  .tl-item-popup-divider {
+    height:1px; background:var(--border-gold); margin:0 0 16px;
+    opacity:0.4;
+  }
+  .tl-item-popup-desc {
+    font-family:'Rajdhani',sans-serif; font-size:16px; font-weight:500;
+    color:var(--text); line-height:1.6; margin-bottom:16px;
+  }
+  .tl-item-popup-section-title {
+    font-family:'Exo 2',sans-serif; font-size:10px; letter-spacing:2px;
+    text-transform:uppercase; color:var(--text-dim);
+    margin-bottom:8px;
+  }
+  .tl-item-popup-stat {
+    display:flex; justify-content:space-between; align-items:center;
+    padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05);
+    font-family:'Rajdhani',sans-serif; font-size:14px;
+  }
+  .tl-item-popup-stat:last-child { border-bottom:none; }
+  .tl-item-popup-stat-label { color:var(--text-dim); }
+  .tl-item-popup-stat-val { color:var(--text); font-weight:600; }
+  .tl-item-popup-relics {
+    display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;
+  }
+  .tl-item-popup-relic-chip {
+    display:flex; align-items:center; gap:5px;
+    background:rgba(255,255,255,0.05); border:1px solid var(--border);
+    border-radius:6px; padding:3px 8px;
+    font-family:'Rajdhani',sans-serif; font-size:12px; color:var(--text-dim);
+  }
+  .tl-item-popup-relic-chip img { width:18px; height:18px; object-fit:contain; border-radius:3px; }
+  .tl-item-popup-source {
+    margin-top:14px; padding:8px 12px;
+    background:rgba(200,155,60,0.07); border:1px solid rgba(200,155,60,0.2);
+    border-radius:8px;
+    font-family:'Exo 2',sans-serif; font-size:11px; color:var(--gold-dim);
+    line-height:1.5;
+  }
+
+  /* Edit popup */
+  .tl-edit-popup {
+    position: fixed;
+    z-index: 9500;
+    background: #0d1119;
+    border: 1px solid var(--border-gold);
+    border-radius: 12px;
+    padding: 16px 18px;
+    width: 260px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.9), 0 0 0 1px rgba(200,155,60,0.1);
+    font-family: 'Exo 2', sans-serif;
+  }
+  .tl-edit-popup-title {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px; font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border-gold);
+  }
+  .tl-edit-label {
+    display: block;
+    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--text-dim); margin-bottom: 5px;
+  }
+  .tl-edit-input {
+    width: 100%; background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-gold); color: var(--text);
+    padding: 7px 10px; border-radius: 6px;
+    font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 600;
+    outline: none; transition: border-color 0.2s;
+  }
+  .tl-edit-input:focus { border-color: var(--gold-dim); }
+  .tl-edit-colors {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px;
+  }
+  .tl-edit-swatch {
+    width: 26px; height: 26px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent;
+    transition: border-color 0.15s, transform 0.1s;
+  }
+  .tl-edit-swatch:hover { transform: scale(1.15); border-color: rgba(255,255,255,0.5); }
+  .tl-edit-swatch.active { border-color: #fff; transform: scale(1.15); }
+  .tl-edit-actions {
+    display: flex; gap: 6px; margin-top: 14px; justify-content: flex-end;
+  }
+  .tl-edit-btn {
+    padding: 5px 12px; border-radius: 6px; cursor: pointer;
+    font-family: 'Exo 2', sans-serif; font-size: 11px; font-weight: 600;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    background: rgba(255,255,255,0.06); border: 1px solid var(--border);
+    color: var(--text-dim); transition: all 0.15s;
+  }
+  .tl-edit-btn:hover { color: var(--text); border-color: var(--border-gold); }
+  .tl-edit-btn.gold { border-color: var(--gold-dim); color: var(--gold); background: rgba(200,155,60,0.1); }
+  .tl-edit-btn.gold:hover { background: rgba(200,155,60,0.2); }
+  .tl-edit-btn.danger { border-color: rgba(255,80,80,0.3); color: #ff6666; background: rgba(255,60,60,0.07); }
+  .tl-edit-btn.danger:hover { background: rgba(255,60,60,0.15); }
+
+  /* Unranked pool */
+  .tl-unranked-section { margin-top:12px; flex-shrink:0; }
+
+  /* Pool search bar */
+  .tl-pool-search-wrap {
+    position:relative; width:260px; flex-shrink:0;
+  }
+  .tl-pool-search-wrap .kcs-box {
+    padding-left: 32px; /* clear the 🔍 icon */
+  }
+  .tl-pool-search-icon {
+    position:absolute; left:10px; top:50%; transform:translateY(-50%);
+    font-size:13px; pointer-events:none; z-index:1;
+  }
+  .tl-pool-search-input {
+    width:100%; padding:8px 32px 8px 34px;
+    background:rgba(255,255,255,0.05); border:1px solid var(--border-gold);
+    border-radius:8px; color:var(--text);
+    font-family:'Rajdhani',sans-serif; font-size:14px;
+    outline:none; transition:border-color 0.2s;
+  }
+  .tl-pool-search-input:focus { border-color:var(--gold-dim); }
+  .tl-pool-search-input::placeholder { color:var(--text-dim); }
+  .tl-pool-search-clear {
+    position:absolute; right:10px; top:50%; transform:translateY(-50%);
+    background:none; border:none; color:var(--text-dim); font-size:13px;
+    cursor:pointer; display:none; padding:0; line-height:1;
+  }
+  .tl-pool-search-clear:hover { color:var(--text); }
+  .tl-pool-search-wrap.has-text .tl-pool-search-clear { display:block; }
+
+  @keyframes tl-search-pulse {
+    0%   { box-shadow: 0 0 0px  rgba(200,155,60,0);    border-color: var(--border-gold); }
+    30%  { box-shadow: 0 0 18px rgba(200,155,60,0.9);  border-color: var(--gold-light); }
+    60%  { box-shadow: 0 0 6px  rgba(200,155,60,0.3);  border-color: var(--gold-dim); }
+    80%  { box-shadow: 0 0 14px rgba(200,155,60,0.7);  border-color: var(--gold-light); }
+    100% { box-shadow: 0 0 0px  rgba(200,155,60,0);    border-color: var(--border-gold); }
+  }
+  .tl-pool-search-input.pulsing, .kcs-input.pulsing {
+    animation: tl-search-pulse 1.4s ease-out forwards;
+  }
+  .tl-pool-search-results {
+    display:none; position:absolute; left:0; right:0; bottom:calc(100% + 4px);
+    background:var(--bg-panel); border:1px solid var(--border-gold);
+    border-radius:8px; z-index:100; max-height:280px; overflow-y:auto;
+    box-shadow:0 -8px 24px rgba(0,0,0,0.6);
+  }
+  .tl-pool-search-results.open { display:block; }
+  .tl-pool-search-results::-webkit-scrollbar { width:4px; }
+  .tl-pool-search-results::-webkit-scrollbar-thumb { background:var(--border-gold); border-radius:2px; }
+  .tl-pool-result {
+    display:flex; align-items:center; gap:10px;
+    padding:7px 12px; cursor:pointer;
+    border-bottom:1px solid var(--border);
+    transition:background 0.12s;
+  }
+  .tl-pool-result:last-child { border-bottom:none; }
+  .tl-pool-result:hover { background:rgba(200,155,60,0.1); }
+  .tl-pool-result.already-in { opacity:0.4; cursor:default; pointer-events:none; }
+  .tl-pool-result img { width:32px; height:32px; object-fit:contain; border-radius:5px; flex-shrink:0; }
+  .tl-pool-result-emoji { width:32px; height:32px; display:flex; align-items:center; justify-content:center; font-size:18px; flex-shrink:0; }
+  .tl-pool-result-info { display:flex; flex-direction:column; min-width:0; }
+  .tl-pool-result-name { font-family:'Rajdhani',sans-serif; font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tl-pool-result-sub { font-family:'Exo 2',sans-serif; font-size:10px; color:var(--text-dim); }
+  .tl-pool-result-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; margin-left:auto; }
+  .tl-pool-no-results { padding:14px 12px; font-family:'Exo 2',sans-serif; font-size:12px; color:var(--text-dim); text-align:center; }
+
+  /* Description banner */
+  .tl-desc-banner {
+    background: rgba(200,155,60,0.07);
+    border: 1px solid rgba(200,155,60,0.18);
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 10px;
+    font-family: 'Exo 2', sans-serif;
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    flex-shrink: 0;
+  }
+  .tl-desc-banner strong { color: var(--gold); font-weight: 600; }
+
+  /* Standalone hint */
+  .tl-title-hint {
+    font-family: 'Exo 2', sans-serif;
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+  }
+  .tl-unranked-label {
+    font-family:'Exo 2',sans-serif; font-size:10px; letter-spacing:2px;
+    text-transform:uppercase; color:var(--text-dim);
+    margin-bottom:8px; padding-bottom:6px;
+    border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+  }
+  .tl-unranked-pool {
+    display:flex; flex-wrap:wrap; gap:6px;
+    min-height:80px; padding:8px;
+    background:rgba(255,255,255,0.02);
+    border:1px dashed var(--border); border-radius:8px;
+    transition:background 0.15s;
+  }
+  .tl-unranked-pool.drag-over { background:rgba(200,155,60,0.07); border-color:var(--gold-dim); }
+
+  /* Color picker row for tier label */
+  .tl-color-row {
+    display:flex; gap:4px; margin-top:4px; flex-wrap:wrap;
+    justify-content:center;
+  }
+  .tl-color-swatch {
+    width:14px; height:14px; border-radius:50%;
+    cursor:pointer; border:2px solid transparent;
+    transition:border-color 0.1s;
+  }
+  .tl-color-swatch:hover { border-color:#fff; }
+
+</style>
+</head>
+<body>
+<div id="relicTooltip"></div>
+
+<header>
+  <div class="header-rune">🔮</div>
+  <div>
+    <h1>Relic Explorer</h1>
+    <p>Legends of Runeterra · Path of Champions</p>
+  </div>
+</header>
+<!-- Autocomplete at body level to avoid any clipping -->
+<div class="relic-autocomplete" id="relicAC"></div>
+
+<div class="top-nav">
+  <button class="tab-btn active" id="tabChampions" onclick="switchTab('champions')">⚔️ Champions</button>
+  <button class="tab-btn" id="tabRelics" onclick="switchTab('relics')">💎 Relic Index</button>
+  <button class="tab-btn" id="tabTierlist" onclick="switchTab('tierlist')">📊 Tier List</button>
+</div>
+
+<div class="main-wrapper">
+<div class="relic-filter-panel">
+  <span class="relic-filter-label">🔮 Filter by Relic</span>
+  <div class="relic-pills-row" id="relicPillsRow"></div>
+  <div class="relic-input-wrap" id="relicInputWrap">
+    <span class="relic-input-search-icon">🔍</span>
+    <input type="text" id="relicSearchInput" placeholder="Add relic…" autocomplete="off" oninput="onRelicInput()">
+    <button class="relic-input-clear" id="relicInputClear" onclick="clearRelicInput()">✕</button>
+  </div>
+</div>
+<div class="main">
+  <div class="sidebar">
+    <div class="drum-search-wrap">
+      <span class="drum-search-icon">🔍</span>
+      <div class="kcs-box" id="kcsChampBox" onclick="document.getElementById('kcsChampInput').focus()">
+        <div class="kcs-chips" id="kcsChampChips"></div>
+        <input class="kcs-input" id="kcsChampInput" placeholder="Filter champions…" autocomplete="off">
+        <button class="kcs-clear" id="kcsChampClear" onclick="kcsClearAll('champ')">✕</button>
+      </div>
+      <div class="kcs-dropdown" id="kcsChampDD"></div>
+    </div>
+
+    <div class="drum-container" id="drumContainer">
+      <div class="drum-viewport" id="drumViewport">
+        <div class="drum-track" id="drumTrack"></div>
+      </div>
+    </div>
+
+    <div class="drum-nav">
+      <button onclick="step(-1)" title="Previous">▲</button>
+      <button onclick="step(1)"  title="Next">▼</button>
+    </div>
+  </div>
+
+  <div class="detail-column">
+    <div class="detail" id="detail">
+      <div class="detail-empty">
+        <div class="big-icon">⚔️</div>
+        <div>Select a champion to view builds</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+
+
+<!-- Relic index keyword popup -->
+<div id="riKwPopup" class="ri-kw-popup"></div>
+
+<!-- ── RELIC INDEX PANEL ── -->
+<div id="relicIndexPanel" style="display:none;" class="relic-index-root">
+  <div class="ri-toolbar">
+    <div class="ri-tier-filters">
+      <button class="ri-tier-btn active" data-tier="all" onclick="riSetTier('all')">All</button>
+      <button class="ri-tier-btn" data-tier="epic" onclick="riSetTier('epic')"><span class="ri-dot epic"></span>Epic</button>
+      <button class="ri-tier-btn" data-tier="rare" onclick="riSetTier('rare')"><span class="ri-dot rare"></span>Rare</button>
+      <button class="ri-tier-btn" data-tier="common" onclick="riSetTier('common')"><span class="ri-dot common"></span>Common</button>
+      <button class="ri-tier-btn" data-tier="consumable" onclick="riSetTier('consumable')"><span class="ri-dot consumable"></span>Consumable</button>
+    </div>
+    <div class="ri-search-wrap" id="riSearchWrap">
+      <div class="kcs-box" id="kcsRelicBox" onclick="document.getElementById('kcsRelicInput').focus()">
+        <div class="kcs-chips" id="kcsRelicChips"></div>
+        <input class="kcs-input" id="kcsRelicInput" placeholder="Search relics…" autocomplete="off">
+        <button class="kcs-clear" id="kcsRelicClear" onclick="kcsClearAll('relic')">✕</button>
+      </div>
+      <div class="kcs-dropdown" id="kcsRelicDD"></div>
+    </div>
+    <div class="ri-sort-wrap">
+      <span class="ri-sort-label">Sort:</span>
+      <select id="riSort" onchange="riRender()">
+        <option value="uses">Most Used</option>
+        <option value="name">Name A–Z</option>
+        <option value="tier">By Tier</option>
+      </select>
+    </div>
+    <div class="ri-count" id="riCount"></div>
+  </div>
+  <div class="ri-body">
+    <div class="ri-grid" id="riGrid"></div>
+    <div class="ri-detail-panel" id="riDetailPanel">
+      <div class="ri-detail-empty">
+        <div style="font-size:48px;opacity:0.15;">💎</div>
+        <div>Click a relic to see builds</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── TIER LIST PANEL ── -->
+<div id="tierlistPanel" style="display:none;" class="tl-root">
+
+  <!-- Left sidebar: controls -->
+  <div class="tl-sidebar">
+    <div class="tl-sidebar-section">
+      <button class="tl-action-btn gold" onclick="tlClearAll()" style="font-size:12px;">✏️ Make Your Own Tier List</button>
+    </div>
+
+    <div class="tl-sidebar-section">
+      <div class="tl-section-title">⚡ Auto Tier Lists</div>
+      <button class="tl-preset-btn active" data-preset="relic-usage" onclick="tlLoadPreset('relic-usage')">
+        <span class="tl-preset-icon">💎</span>
+        <div><div class="tl-preset-name">Relic Usage</div><div class="tl-preset-desc">How often each relic appears in builds</div></div>
+      </button>
+      <button class="tl-preset-btn" data-preset="relic-diversity" onclick="tlLoadPreset('relic-diversity')">
+        <span class="tl-preset-icon">🌈</span>
+        <div><div class="tl-preset-name">Relic Flexibility</div><div class="tl-preset-desc">How many different champions use this relic</div></div>
+      </button>
+      <button class="tl-preset-btn" data-preset="champ-diversity" onclick="tlLoadPreset('champ-diversity')">
+        <span class="tl-preset-icon">⚔️</span>
+        <div><div class="tl-preset-name">Champion Variety</div><div class="tl-preset-desc">How many recorded builds each champion has</div></div>
+      </button>
+    </div>
+
+    <div class="tl-sidebar-section">
+      <div class="tl-section-title">🎨 Customize</div>
+      <div class="tl-label">Show items</div>
+      <div class="tl-toggle-group">
+        <button class="tl-toggle active" id="tlShowRelics" onclick="tlToggleShow('relics')">Relics</button>
+        <button class="tl-toggle" id="tlShowChamps" onclick="tlToggleShow('champs')">Champions</button>
+      </div>
+      <div class="tl-label" id="tlRelicTierLabel" style="margin-top:12px;">Relic tiers</div>
+      <div class="tl-toggle-group" id="tlRelicTierGroup" style="flex-wrap:wrap;gap:4px;">
+        <button class="tl-toggle active" id="tlFilterEpic" onclick="tlToggleFilter('epic')">Epic</button>
+        <button class="tl-toggle active" id="tlFilterRare" onclick="tlToggleFilter('rare')">Rare</button>
+        <button class="tl-toggle active" id="tlFilterCommon" onclick="tlToggleFilter('common')">Common</button>
+        <button class="tl-toggle" id="tlFilterConsumable" onclick="tlToggleFilter('consumable')">Consumable</button>
+      </div>
+    </div>
+
+    <div class="tl-sidebar-section">
+      <div class="tl-section-title">🏗 Tier Controls</div>
+      <button class="tl-action-btn" onclick="tlAddTier()">＋ Add Tier</button>
+      <button class="tl-action-btn" onclick="tlResetTiers()">↺ Reset Tiers</button>
+      <button class="tl-action-btn gold" onclick="tlAutoFill()">✨ Auto-Fill</button>
+    </div>
+
+    <div class="tl-sidebar-section">
+      <div class="tl-section-title">💾 Export</div>
+      <button class="tl-action-btn" onclick="tlExportImage()">📷 Save as Image</button>
+    </div>
+  </div>
+
+  <!-- Main tier list area -->
+  <div class="tl-main">
+    <div class="tl-title-bar">
+      <input class="tl-title-input" id="tlTitleInput" value="My Tier List" />
+    </div>
+    <!-- Description banner — updates per preset -->
+    <div class="tl-desc-banner" id="tlDescBanner"></div>
+    <div class="tl-title-hint" style="margin-bottom:10px;">💡 Click the tier label to rename or change color · Drag the label to reorder tiers · Drag items between tiers</div>
+    <div class="tl-tiers" id="tlTiers"></div>
+    <div class="tl-unranked-section">
+      <div class="tl-unranked-label">
+        <span>📦 Unranked Pool — drag items into tiers above</span>
+        <div class="tl-pool-search-wrap" id="tlPoolSearchWrap">
+          <span class="tl-pool-search-icon">🔍</span>
+          <div class="kcs-box" id="kcsPoolBox" onclick="document.getElementById('kcsPoolInput').focus()">
+            <div class="kcs-chips" id="kcsPoolChips"></div>
+            <input class="kcs-input" id="kcsPoolInput" placeholder="Search to add…" autocomplete="off">
+            <button class="kcs-clear" id="kcsPoolClear" onclick="kcsClearAll('pool')">✕</button>
+          </div>
+          <div class="kcs-dropdown" id="kcsPoolDD"></div>
+        </div>
+      </div>
+      <div class="tl-unranked-pool" id="tlUnranked"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Player Drawer -->
+<div id="playerDrawerOverlay" onclick="closePlayerDrawer()"></div>
+<div id="playerDrawer">
+  <div class="pd-header">
+    <div class="pd-header-text">
+      <div class="pd-title" id="pdPlayerName"></div>
+      <div class="pd-subtitle" id="pdBuildCount"></div>
+    </div>
+    <button class="pd-close" onclick="closePlayerDrawer()" title="Close">✕</button>
+  </div>
+  <div class="pd-body" id="pdBody"></div>
+</div>
+
+<script src="builds.js"></script>
+<script src="relics.js"></script>
+<script src="keywords.js"></script>
+<script>
+
+// ── DATA ─────────────────────────────────────────────────────────────
+// ── RELIC TIER ───────────────────────────────────────────────────────
+// ── RELIC DATABASE ───────────────────────────────────────────────────
+// Full relic info: tier, accurate description, source where applicable.
+// Tiers: 'common' (green) | 'rare' (blue) | 'epic' (purple)
+// Note: Epic Relics can't have duplicates and have duplicate protection
+//       when opening Gold Reliquaries.
+//
+// ── SOURCES REFERENCE ────────────────────────────────────────────────
+// COSMIC VAULTS:
+//   Bronze  — 95%:5frags / 5%:10frags | No relic | No bonus
+//            Sources: Winning 2★ or lower adventures, Champion Campaigns,
+//                     Daily Quest Victory!, Emporium (Shards)
+//   Silver  — 90%:10frags / 10%:15frags | No relic | No bonus
+//            Sources: Adventure Rewards, Completing Quests,
+//                     Weekly Quest "Call of the Adventure", Legend Lv7 Reward
+//   Gold    — 90%:20frags / 10%:20+10frags | 30% Random Common Relic | No bonus
+//            Sources: Adventure Rewards, Completing Quests, Legend Level Rewards,
+//                     Weekly Quest "Portal Warrior", Emporium (Shards)
+//   Platinum— 60%:40frags / 30%:20+20frags / 10%:30+20frags | 30% Random Rare Relic
+//            Sources: Completing The Path Ch.V and VI,
+//                     Glory Store (up to 5/month for 20 Glory), Legend Level Rewards
+//   Diamond — 75%:40+40frags / 20%:40+40+40frags / 5%:80+80+80frags
+//             Wild: 85%:20 / 14%:50 / 1%:100
+//             Relic: 65% Greater Cosmic Blessing / 35% Random Rare Relic
+//             Bonus: 20%:10 Fire / 5%:150 Coins
+//            Sources: Achievement Quests, Event Quests, Legend Level Rewards
+//   Gold/Platinum/Diamond Vaults have Duplicate Protection.
+//   Spirit Blossom Fragments/currency cannot appear in any Vault.
+//
+// RELIQUARIES:
+//   Bronze Reliquary — 90% Common Relic / 10% Rare Relic | No Spirit Forge
+//            Sources: Adventure Rewards, Completing Quests
+//   Silver Reliquary — 100% Rare Relic | No Spirit Forge
+//            Sources: Adventure Rewards, Completing Quests,
+//                     Legend Level Rewards, Glory Store (up to 5/month for 20 Glory)
+//   Gold Reliquary   — 100% Epic Relic (Duplicate Protection) | Spirit Forge if own all epics
+//            Sources: Emporium, The Frost Witch's 5th reward, Legend Level Rewards
+//   Duplicate Protection: guarantees no already-owned relics.
+//            If player owns all epics → rewards Spirit Forge + 50 Targon Gemstones instead.
+// ─────────────────────────────────────────────────────────────────────
+
+
+
+// ── ACQUIRING COSMIC VAULTS ──────────────────────────────────────────
+// Cosmic Vault = main method of acquiring Champion Fragments.
+// Free sources:
+//   - Reaching LoR/event milestones
+//   - PoC quests: Daily→Bronze, Weekly→Silver, Path quests→Platinum+Gold
+//   - Completing Adventures (almost every adventure rewards a vault)
+//   - Winning one of the 3 Weekly Adventures → Silver Vault
+//   - Up to 5 Platinum Vaults/month in Glory Store for 50 Glory each
+//   - Legend Levels (before Lv30): Gold at 14,17,23,25,28; Platinum at 19,30
+//   - Legend Levels (Lv30-50): ends in 1,2,4,5,7,8 → Gold; ends in 3,6,9 → Platinum
+//   - Battle Pass (some rewards premium-only)
+// Duplicate Protection (Gold/Platinum/Diamond vaults):
+//   - Prioritizes fragments for champions not yet fully upgraded
+//   - Gold: prioritizes champions needing 20+ fragments to fully upgrade
+//   - Platinum/Diamond: prioritizes champions that can be fully upgraded with the drop
+//   - Stardust still granted from duplicate Relics (relics not protected)
+//
+// ── ACQUIRING RELIQUARIES ────────────────────────────────────────────
+// Free sources:
+//   - PoC quests: Weekly Quest→Bronze, Path Quests→many Silver
+//   - Completing Adventures
+//   - The Frost Witch's 5th reward → Gold Reliquary (only adventure to give Gold)
+//   - Winning 2 of the 3 Weekly Adventures → 1 Silver + 1 Bronze Reliquary
+//   - Up to 5 Silver Reliquaries/month in Glory Store for 10 Glory each
+//   - Legend Levels: Silver at 12, 22, 26; Gold at 40, 50
+//   - Battle Pass (some rewards premium-only)
+// Duplicate Protection (Gold Reliquary only):
+//   - Guarantees no already-owned epic relics
+//   - If player owns ALL epics → receives Spirit Forge + 50 Targon Gemstones instead
+
+
+
+function getRelicTier(name) {
+  return RELIC_DB[name]?.tier || 'common';
+}
+
+// ── KEYWORD HELPERS ───────────────────────────────────────────────────
+
+// Returns array of {key, data} for all keywords found in a description string.
+function getRelicKeywords(desc) {
+  if (!desc || typeof KEYWORD_DB === 'undefined') return [];
+  const found = [];
+  const seen  = new Set();
+  for (const [kw, data] of Object.entries(KEYWORD_DB)) {
+    const pattern = new RegExp(`\\b${kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`, 'i');
+    if (pattern.test(desc) && !seen.has(kw.toLowerCase())) {
+      found.push({ key: kw, data });
+      seen.add(kw.toLowerCase());
+    }
+  }
+  return found;
+}
+
+// Wraps each recognised keyword in desc with a gold <span>.
+// ── Game mechanics — highlighted blue, no popup definition ───────────
+const MECHANIC_TERMS = [
+  "Game Start", "Adventure Start", "Stance Swap",
+  "Husk", "Darkin", "Ascended",
+];
+
+// Keywords excluded from search (too generic to be useful)
+const KW_SEARCH_EXCLUDED = new Set([
+  "Power", "Play", "Attack", "Round Start", "Round End"
+]);
+
+// Returns true if the query matches a keyword/mechanic in this description
+function descMatchesKeywordQuery(desc, q) {
+  if (!desc || !q) return false;
+  const lq = q.toLowerCase();
+  const ld = desc.toLowerCase();
+
+  // Direct text match in description
+  if (ld.includes(lq)) return true;
+
+  // Check if query matches a defined keyword name (gold) — and it's not excluded
+  for (const kw of Object.keys(KEYWORD_DB)) {
+    if (KW_SEARCH_EXCLUDED.has(kw)) continue;
+    if (kw.toLowerCase().includes(lq) && ld.includes(kw.toLowerCase())) return true;
+  }
+
+  // Check if query matches a mechanic term (blue)
+  for (const term of MECHANIC_TERMS) {
+    if (term.toLowerCase().includes(lq) && ld.includes(term.toLowerCase())) return true;
+  }
+
+  return false;
+}
+
+// Returns all relic descriptions for a given champion across all their builds
+function champRelicDescs(champName) {
+  const relicNames = new Set();
+  rawData.filter(d => d.champion === champName)
+    .forEach(d => { [d.r1, d.r2, d.r3].forEach(r => { if (r) relicNames.add(r); }); });
+  return [...relicNames].map(r => RELIC_DB[r]?.desc || '').join(' ');
+}
+
+// Returns true if the champion has AT LEAST ONE build where ALL keyword/mechanic
+// chips are satisfied simultaneously (within the same build's relic descriptions).
+function champHasBuildMatchingAllKwChips(champName, kwChips) {
+  if (!kwChips.length) return true;
+  return rawData.some(d => {
+    if (d.champion !== champName) return false;
+    const buildDesc = [d.r1, d.r2, d.r3].map(r => RELIC_DB[r]?.desc || '').join(' ');
+    return kwChips.every(chip => descMatchesKeywordQuery(buildDesc, chip.value));
+  });
+}
+
+// Returns filtered builds for a champion given current chips + relicSlots
+function getFilteredBuilds(champName) {
+  const chips = (typeof kcsState !== 'undefined' && kcsState.champ?.chips) || [];
+  return rawData.filter(d => {
+    if (d.champion !== champName) return false;
+    // Must match relicSlots
+    if (!buildMatchesSlots(d, relicSlots)) return false;
+    // Must match all chips
+    for (const chip of chips) {
+      if (chip.kind === 'kw' || chip.kind === 'mec') {
+        const buildDesc = [d.r1, d.r2, d.r3].map(r => RELIC_DB[r]?.desc || '').join(' ');
+        if (!descMatchesKeywordQuery(buildDesc, chip.value)) return false;
+      } else if (chip.kind === 'rel') {
+        if (![d.r1, d.r2, d.r3].includes(chip.value)) return false;
+      } else if (chip.kind === 'champ') {
+        if (champName !== chip.value) return false;
+      }
+    }
+    return true;
+  });
+}
+
+function highlightKeywords(desc) {
+  if (!desc || typeof KEYWORD_DB === 'undefined') return desc;
+  let result = desc;
+
+  // Gold — defined keywords with popup
+  for (const [kw] of Object.entries(KEYWORD_DB)) {
+    const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    const pattern = new RegExp(`\\b(${escaped})\\b`, 'gi');
+    result = result.replace(pattern, '<span class="kw-highlight">$1</span>');
+  }
+
+  // Blue — game mechanics, no popup, just visual distinction
+  for (const term of MECHANIC_TERMS) {
+    const escaped = term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    // Don't double-wrap anything already highlighted
+    const pattern = new RegExp(`(?<!<[^>]*)(${escaped})(?![^<]*>)`, 'gi');
+    result = result.replace(pattern, '<span class="kw-mechanic">$1</span>');
+  }
+
+  return result;
+}
+
+function buildRelicTooltipHTML(name, info) {
+  if (!info || !info.desc) return '';
+
+  const tier      = info.tier || 'common';
+  const subtype   = info.subtype || '';
+  const isConsumable = tier === 'consumable';
+
+  const tierColors = {
+    epic: 'var(--epic)', rare: 'var(--rare)',
+    common: 'var(--common)', consumable: 'var(--consumable)'
+  };
+  const tierColor = tierColors[tier] || tierColors.common;
+
+  let tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1);
+  if (subtype === 'signature') tierLabel += ' · Signature';
+  else if (subtype === 'general') tierLabel += ' · General';
+  if (isConsumable && info.rarity) {
+    tierLabel = info.rarity.charAt(0).toUpperCase() + info.rarity.slice(1) + ' Consumable';
+  }
+
+  let html = '';
+
+  // Icon layout: big icon on left, name+tier on right
+  if (info.icon) {
+    html += `<div style="display:flex;align-items:center;gap:14px;margin-bottom:12px;">
+      <div style="
+        flex-shrink:0;
+        width:110px;height:110px;
+        position:relative;
+      ">
+        <img src="${info.icon}" style="width:100%;height:100%;object-fit:contain;display:block;" alt="${name}">
+      </div>
+      <div style="flex:1;min-width:0;">
+        <div class="rtt-name" style="color:${tierColor};font-size:26px;">${name}</div>
+        <div class="rtt-tier-row" style="margin-bottom:0;margin-top:4px;"><div class="rtt-tier-dot" style="background:${tierColor};width:8px;height:8px;box-shadow:0 0 5px ${tierColor};"></div>${tierLabel}</div>
+      </div>
+    </div>`;
+  } else {
+    html += `<div class="rtt-name" style="color:${tierColor}">${name}</div>`;
+    html += `<div class="rtt-tier-row"><div class="rtt-tier-dot" style="background:${tierColor}"></div>${tierLabel}</div>`;
+  }
+
+  html += `<div class="rtt-desc">${highlightKeywords(info.desc)}</div>`;
+
+  // ── Keyword glossary ──
+  const foundKws = getRelicKeywords(info.desc);
+  if (foundKws.length > 0) {
+    html += `<div class="rtt-keywords">
+      <div class="rtt-keywords-title">Keywords</div>`;
+    for (const { key, data } of foundKws) {
+      html += `<div class="rtt-kw-row">
+        <div class="rtt-kw-icon">${data.icon}</div>
+        <div class="rtt-kw-body">
+          <div class="rtt-kw-name">${key}</div>
+          <div class="rtt-kw-desc">${data.desc}</div>
+        </div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  if (info.champion && subtype === 'signature') {
+    html += `<div class="rtt-champion">Signature relic for <b>${info.champion}</b></div>`;
+  }
+
+  if (info.source) {
+    html += `<div class="rtt-source"><b>📦 How to get:</b> ${info.source}</div>`;
+  } else if (subtype === 'signature') {
+    html += `<div class="rtt-source"><b>📦 How to get:</b> Champion Bundle · Glory Store (600 Glory, ~6 months after release)</div>`;
+  } else if (tier === 'epic' && subtype === 'general') {
+    html += `<div class="rtt-source"><b>📦 How to get:</b> Gold Reliquary (with duplicate protection) · Silver/Bronze Reliquary (rare chance)</div>`;
+  } else if (tier === 'rare') {
+    html += `<div class="rtt-source"><b>📦 How to get:</b> Bronze Reliquary (10%) · Silver Reliquary · Gold Vault (30% chance)</div>`;
+  } else if (tier === 'common') {
+    html += `<div class="rtt-source"><b>📦 How to get:</b> Bronze Reliquary (90%) · Gold Vault (30% chance)</div>`;
+  }
+
+  if (info.gloryStore) {
+    html += `<div class="rtt-glory">🏆 Glory Store: ${info.gloryStore}</div>`;
+  }
+
+  if (isConsumable) {
+    html += `<div class="rtt-consumable-note">⚗️ Consumable — Removed after Quest completion. No copy limit.</div>`;
+  }
+
+  return html;
+}
+
+// ── CHAMPION CONFIG ──────────────────────────────────────────────────
+const CHAMP_MAP = {
+  "Aatrox":"Aatrox","Ahri":"Ahri","Akshan":"Akshan","Ambessa":"Ambessa","Anivia":"Anivia",
+  "Annie":"Annie","Ashe":"Ashe","Aurelion Sol":"AurelionSol","Azir":"Azir","Caitlyn":"Caitlyn",
+  "Darius":"Darius","Diana":"Diana","Ekko":"Ekko","Elder Dragon":null,"Elise":"Elise",
+  "Evelynn":"Evelynn","Fiddlesticks":"Fiddlesticks","Garen":"Garen","Gwen":"Gwen","Heimerdinger":"Heimerdinger",
+  "Jack":null,"Jayce":"Jayce","Jhin":"Jhin","Jinx":"Jinx","Kai'Sa":"Kaisa","Kayle":"Kayle",
+  "LeBlanc":"Leblanc","Leona":"Leona","Lillia":"Lillia","Lux":"Lux","Lux: Illuminated":null,
+  "Master Yi":"MasterYi","Mel":"Mel","Miss Fortune":"MissFortune","Mordekaiser":"Mordekaiser",
+  "Morgana":"Morgana","Nasus":"Nasus","Nautilus":"Nautilus",
+  "Neeko":"Neeko","Norra":null,"Nunu & Willump":"Nunu","Ornn":"Ornn","Pyke":"Pyke","Samira":"Samira",
+  "Sett":"Sett","Shyvana":"Shyvana","Soraka":"Soraka","Spirit Blossom Ahri":"Ahri",
+  "Spirit Blossom Evelynn":"Evelynn","Spirit Blossom Kindred":"Kindred",
+  "Spirit Blossom Master Yi":"MasterYi","Spirit Blossom Teemo":"Teemo",
+  "Spirit Blossom Yasuo":"Yasuo","Swain":"Swain","Taliyah":"Taliyah","Teemo":"Teemo",
+  "The Poro King":null,"Thresh":"Thresh","Tryndamere":"Tryndamere","Twisted Fate":"TwistedFate",
+  "Udyr":"Udyr","Vayne":"Vayne","Vex":"Vex","Vi":"Vi","Viego":"Viego","Viktor":"Viktor",
+  "Volibear":"Volibear","Warwick":"Warwick","Yasuo":"Yasuo","Yuumi":"Yuumi",
+};
+
+const EMOJI_FALLBACK = {"Elder Dragon":"🐉","Lux: Illuminated":"🌟","Norra":"🐀","The Poro King":"👑","Jack":"🃏"};
+const DDV = "16.7.1";
+
+// LoR-exclusive champions — no DDragon equivalent, use local icons folder
+const LOR_EXCLUSIVE_IMG = {
+  "Elder Dragon":             "icons/champions/Elder Dragon.png",
+  "Norra":                    "icons/champions/Norra.png",
+  "Lux: Illuminated":         "icons/champions/Lux Illuminated.png",
+  "The Poro King":            "icons/champions/The Poro King.png",
+  "Jack":                     "icons/champions/Jack.png",
+  "Spirit Blossom Ahri":      "icons/champions/Spirit Blossom Ahri.png",
+  "Spirit Blossom Evelynn":   "icons/champions/Spirit Blossom Evelynn.png",
+  "Spirit Blossom Kindred":   "icons/champions/Spirit Blossom Kindred.png",
+  "Spirit Blossom Master Yi": "icons/champions/Spirit Blossom Master Yi.png",
+  "Spirit Blossom Teemo":     "icons/champions/Spirit Blossom Teemo.png",
+  "Spirit Blossom Yasuo":     "icons/champions/Spirit Blossom Yasuo.png",
+};
+
+function champImg(name) {
+  if (LOR_EXCLUSIVE_IMG[name]) return LOR_EXCLUSIVE_IMG[name];
+  const key = CHAMP_MAP[name];
+  if (!key) return null;
+  return `https://ddragon.leagueoflegends.com/cdn/${DDV}/img/champion/${key}.png`;
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────
+const allChampions = [...new Set(rawData.map(d => d.champion))].sort();
+let filtered   = [...allChampions];
+let currentIdx = 0;
+
+const ITEM_H     = 58;
+const SNAP_SLOT  = 4;          // active item sits in this slot (0-based) — must equal POOL_ABOVE
+const POOL_ABOVE = 4;          // rows above the snap slot
+const POOL_BELOW = 10;         // rows below the snap slot
+const POOL_SIZE  = POOL_ABOVE + 1 + POOL_BELOW;
+const SNAP_Y     = SNAP_SLOT * ITEM_H; // px from top of viewport to active row top
+
+let trackOffset  = 0;
+let isAnimating  = false;
+
+// ── DOM ───────────────────────────────────────────────────────────────
+const viewport  = document.getElementById('drumViewport');
+const track     = document.getElementById('drumTrack');
+
+function wrap(i, n) { return ((i % n) + n) % n; }
+
+// ── BUILD POOL (once) ─────────────────────────────────────────────────
+function buildPool() {
+  track.innerHTML = '';
+  for (let i = 0; i < POOL_SIZE; i++) {
+    const slot = i;
+    const row  = document.createElement('div');
+    row.className = 'drum-item';
+
+    const img  = document.createElement('img');
+    img.className = 'champ-img';
+    img.addEventListener('error', () => {
+      // Only hide img if it's currently supposed to be showing (guard against stale errors)
+      if (img.style.display !== 'none') {
+        img.style.display = 'none';
+        emo.style.display = 'flex';
+      }
+    });
+
+    const emo  = document.createElement('div');
+    emo.className = 'champ-img';
+    emo.style.cssText = 'display:none;align-items:center;justify-content:center;font-size:18px;';
+
+    const nameSpan = document.createElement('span');
+    nameSpan.className = 'item-name';
+
+    const cntSpan = document.createElement('span');
+    cntSpan.className = 'champ-count';
+
+    row.append(img, emo, nameSpan, cntSpan);
+    row.addEventListener('click', () => {
+      document.getElementById('kcsChampInput').blur();
+      const delta = slot - POOL_ABOVE;
+      if (delta === 0 || isAnimating) return;
+      // Jump directly to the clicked champion (not just one step)
+      currentIdx = wrap(currentIdx + delta, filtered.length);
+      reposition(false);
+      fillRows();
+      renderDetail(filtered[currentIdx]);
+    });
+    track.appendChild(row);
+  }
+
+  reposition(false);
+  fillRows();
+}
+
+// ── FILL ROWS with current champion data ──────────────────────────────
+function fillRows() {
+  const rows = track.children;
+  for (let i = 0; i < POOL_SIZE; i++) {
+    const ci   = wrap(currentIdx - POOL_ABOVE + i, filtered.length);
+    const name = filtered.length > 0 ? filtered[ci] : '';
+    const cnt  = name ? getFilteredBuilds(name).length : 0;
+    const src  = name ? champImg(name) : null;
+    const emoji = name ? (EMOJI_FALLBACK[name] || '⚔️') : '';
+
+    const row  = rows[i];
+    const img  = row.querySelector('img.champ-img');
+    const emo  = row.querySelector('div.champ-img');
+    const ns   = row.querySelector('.item-name');
+    const cs   = row.querySelector('.champ-count');
+
+    ns.textContent = name;
+    cs.textContent = name ? String(cnt) : '';
+    row.className  = 'drum-item' + (i === POOL_ABOVE ? ' active' : '');
+
+    if (src) {
+      // Reset emo FIRST so a stale onerror from a previous slot can't re-show it
+      emo.style.display = 'none';
+      img.style.display = '';
+      img.alt = name;
+      // Only update src if it actually changed, to avoid re-triggering onerror
+      if (img.src !== src) img.src = src;
+    } else {
+      img.style.display = 'none';
+      emo.style.display = 'flex';
+      emo.textContent = emoji;
+    }
+  }
+}
+
+// ── POSITION ─────────────────────────────────────────────────────────
+function reposition(animate) {
+  const y = SNAP_Y - POOL_ABOVE * ITEM_H;
+  track.style.transition = animate ? 'transform 0.15s ease' : 'none';
+  track.style.transform  = `translateY(${y}px)`;
+  trackOffset = y;
+}
+
+// ── STEP (arrow / wheel) ──────────────────────────────────────────────
+function step(dir) {
+  if (isAnimating || filtered.length === 0) return;
+  isAnimating = true;
+
+  // Snap active class OFF immediately so no row glows during the slide
+  const rows = track.children;
+  for (let i = 0; i < rows.length; i++) rows[i].classList.remove('active');
+
+  const targetY = trackOffset - dir * ITEM_H;
+  track.style.transition = 'transform 0.12s ease';
+  track.style.transform  = `translateY(${targetY}px)`;
+
+  setTimeout(() => {
+    currentIdx = wrap(currentIdx + dir, filtered.length);
+    reposition(false);
+    fillRows();           // fillRows() re-adds .active to slot POOL_ABOVE
+    renderDetail(filtered[currentIdx]);
+    isAnimating = false;
+  }, 120);
+}
+
+// ── CLICK to jump ─────────────────────────────────────────────────────
+function goTo(newIdx) {
+  if (isAnimating || filtered.length === 0) return;
+  currentIdx = wrap(newIdx, filtered.length);
+  reposition(false);
+  fillRows();
+  renderDetail(filtered[currentIdx]);
+}
+
+// ── SEARCH ────────────────────────────────────────────────────────────
+function onSearch() { kcsApply('champ'); }
+function clearSearch() { kcsClearAll('champ'); }
+
+
+
+// ── WHEEL ─────────────────────────────────────────────────────────────
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  step(e.deltaY > 0 ? 1 : -1);
+}, { passive: false });
+
+// ── KEYBOARD ──────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowDown') { e.preventDefault(); step(1); }
+  if (e.key === 'ArrowUp')   { e.preventDefault(); step(-1); }
+});
+
+// ── DETAIL PANEL ──────────────────────────────────────────────────────
+function renderDetail(name) {
+  const allBuilds = rawData.filter(d => d.champion === name);
+
+  // Filter builds by active champ KCS chips (keyword/mechanic/relic chips)
+  const builds = getFilteredBuilds(name);
+  const detail = document.getElementById('detail');
+  const imgSrc = champImg(name);
+  const emoji  = EMOJI_FALLBACK[name] || '⚔️';
+
+  let imgTag = imgSrc
+    ? `<img class="detail-champ-img" src="${imgSrc}" alt="${name}"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+       <div class="detail-champ-img" style="display:none;align-items:center;justify-content:center;font-size:36px;background:var(--bg-card);">${emoji}</div>`
+    : `<div class="detail-champ-img" style="display:flex;align-items:center;justify-content:center;font-size:36px;background:var(--bg-card);">${emoji}</div>`;
+
+  let html = `
+    <div class="detail-header">
+      ${imgTag}
+      <div>
+        <div class="detail-champ-name">${name}</div>
+        <div class="detail-champ-sub">${builds.length} build${builds.length !== 1 ? 's' : ''} recorded</div>
+      </div>
+    </div>
+    <div class="builds-grid">`;
+
+  builds.forEach((b, i) => {
+    const relics = [b.r1, b.r2, b.r3];
+    // Track how many highlights remain per relic (based on slot counts)
+    const highlightRemaining = {};
+    for (const r of relicSlots) highlightRemaining[r] = (highlightRemaining[r] || 0) + 1;
+
+    const badges = relics.map(r => {
+      const tier = getRelicTier(r);
+      const info = RELIC_DB[r] || {};
+      const ttHTML = buildRelicTooltipHTML(r, info);
+      const escaped = ttHTML.replace(/"/g, '&quot;');
+      let highlight = '';
+      if (highlightRemaining[r] > 0) {
+        highlight = ' filter-match';
+        highlightRemaining[r]--;
+      }
+      return `<div class="relic-badge ${tier}${highlight}" data-tooltip="${escaped}"><div class="relic-dot"></div>${r}</div>`;
+    }).join('');
+    const starMatch = b.star.match(/^([^-]+)(?:-(.+))?$/);
+    const starStr   = starMatch ? starMatch[1].trim() : b.star;
+    const levelStr  = starMatch?.[2] ? starMatch[2].trim() : '';
+    const players   = b.player.split(',').map(p => p.trim()).filter(Boolean);
+    html += `
+      <div class="build-card" data-build-id="${name}::${i}" onclick="selectBuild(this)" style="animation-delay:${i * 0.04}s">
+        <div class="build-top">${badges}</div>
+        <div class="build-bottom">
+          <div class="star-level">⭐ ${starStr}${levelStr ? ` · Lvl ${levelStr}` : ''}</div>
+        </div>
+        <div class="players-row">
+          <span class="players-label">Players: </span>
+          ${players.map(p => `<span class="player-chip" onclick="event.stopPropagation();openPlayerDrawer(this.textContent.trim())">${p}</span>`).join('')}
+        </div>
+      </div>`;
+  });
+  html += `</div>`;
+  detail.innerHTML = html;
+}
+
+// ── RELIC TOOLTIP ENGINE ─────────────────────────────────────────────
+const relicTip = document.getElementById('relicTooltip');
+
+document.addEventListener('mouseover', e => {
+  const badge = e.target.closest('.relic-badge[data-tooltip], .ri-card[data-tooltip]');
+  if (!badge) return;
+  const html = badge.getAttribute('data-tooltip');
+  if (!html) return;
+
+  relicTip.innerHTML = html;
+  relicTip.classList.add('visible');
+  positionTip(badge);
+});
+
+document.addEventListener('mouseout', e => {
+  const badge = e.target.closest('.relic-badge[data-tooltip], .ri-card[data-tooltip]');
+  if (!badge) return;
+  relicTip.classList.remove('visible');
+});
+
+function positionTip(badge) {
+  const r   = badge.getBoundingClientRect();
+  const gap = 10;
+  const vw  = window.innerWidth;
+  const vh  = window.innerHeight;
+
+  // Make visible off-screen first so offsetWidth/Height are correct
+  relicTip.style.top  = '0px';
+  relicTip.style.left = '0px';
+
+  const tw  = relicTip.offsetWidth;
+  const th  = relicTip.offsetHeight;
+
+  // Prefer above, fall back to below
+  let top = r.top - th - gap;
+  if (top < 8) top = r.bottom + gap;
+
+  // If still overflows bottom, pin to bottom edge
+  if (top + th > vh - 8) top = vh - th - 8;
+  // Never go above top edge
+  if (top < 8) top = 8;
+
+  // Center horizontally over badge, clamp to viewport
+  let left = r.left + r.width / 2 - tw / 2;
+  left = Math.max(8, Math.min(left, vw - tw - 8));
+
+  relicTip.style.top  = top  + 'px';
+  relicTip.style.left = left + 'px';
+}
+
+// ── RELIC FILTER STATE ───────────────────────────────────────────────
+// relicSlots is an array of chosen relic names (max 3), position-agnostic.
+// Non-epic relics can appear multiple times (e.g. [Z-Drive, Z-Drive]).
+// Epic relics can only appear once.
+const relicSlots = [];
+
+const allRelics = [...new Set(rawData.flatMap(d => [d.r1, d.r2, d.r3]))].sort();
+const DOT_COLORS = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+
+// Count how many times `relic` appears in a build row
+function countInBuild(d, relic) {
+  return [d.r1, d.r2, d.r3].filter(r => r === relic).length;
+}
+
+// Check if a build row satisfies the current slot list.
+// For each unique relic in slots, the build must have AT LEAST that many copies.
+function buildMatchesSlots(d, slots) {
+  // tally required counts
+  const needed = {};
+  for (const r of slots) needed[r] = (needed[r] || 0) + 1;
+  return Object.entries(needed).every(([r, n]) => countInBuild(d, r) >= n);
+}
+
+// Champions whose builds contain all chosen relics (respecting duplicate counts)
+function champsMatchingSlots() {
+  if (relicSlots.length === 0) return allChampions;
+  return [...new Set(
+    rawData.filter(d => buildMatchesSlots(d, relicSlots)).map(d => d.champion)
+  )].sort();
+}
+
+function recomputeFiltered() {
+  const chips = (typeof kcsState !== 'undefined' && kcsState.champ?.chips) || [];
+  const text  = (document.getElementById('kcsChampInput')?.value || '').toLowerCase().trim();
+  const kwChips  = chips.filter(c => c.kind === 'kw' || c.kind === 'mec');
+  const relChips = chips.filter(c => c.kind === 'rel');
+
+  filtered = allChampions.filter(n => {
+    // Text filter — name match is enough
+    if (text && !n.toLowerCase().includes(text)) return false;
+    // Champ chip filter
+    for (const chip of chips) {
+      if (chip.kind === 'champ' && n !== chip.value) return false;
+    }
+    // Must have at least one build that satisfies ALL relicSlots + relChips + kwChips simultaneously
+    const matchingBuilds = rawData.filter(d => {
+      if (d.champion !== n) return false;
+      if (!buildMatchesSlots(d, relicSlots)) return false;
+      for (const chip of relChips) {
+        if (![d.r1, d.r2, d.r3].includes(chip.value)) return false;
+      }
+      if (kwChips.length) {
+        const buildDesc = [d.r1, d.r2, d.r3].map(r => RELIC_DB[r]?.desc || '').join(' ');
+        for (const chip of kwChips) {
+          if (!descMatchesKeywordQuery(buildDesc, chip.value)) return false;
+        }
+      }
+      return true;
+    });
+    return matchingBuilds.length > 0;
+  });
+}
+
+// ── RENDER PILLS ─────────────────────────────────────────────────────
+function renderPills() {
+  const row  = document.getElementById('relicPillsRow');
+  const wrap = document.getElementById('relicInputWrap');
+
+  row.innerHTML = relicSlots.map((r, i) => {
+    const tier = getRelicTier(r);
+    const dc   = DOT_COLORS[tier] || DOT_COLORS.common;
+    return `<div class="relic-slot-pill ${tier}">
+      <div class="relic-slot-pill-dot" style="background:${dc};box-shadow:0 0 4px ${dc}"></div>
+      ${r}
+      <span class="relic-pill-x" onclick="removeRelicSlot(${i})">✕</span>
+    </div>`;
+  }).join('');
+
+  // Hide input when 3 relics chosen
+  wrap.style.display = relicSlots.length >= 3 ? 'none' : '';
+}
+
+function removeRelicSlot(i) {
+  relicSlots.splice(i, 1);
+  renderPills();
+  recomputeFiltered();
+  if (filtered.length === 0) { fillRows(); return; }
+  currentIdx = 0;
+  reposition(false);
+  fillRows();
+  renderDetail(filtered[currentIdx]);
+}
+
+// ── RELIC SEARCH INPUT ───────────────────────────────────────────────
+function positionAC() {
+  const input = document.getElementById('relicSearchInput');
+  const ac    = document.getElementById('relicAC');
+  if (!input || !ac) return;
+  const r = input.getBoundingClientRect();
+  ac.style.top  = (r.bottom + 4) + 'px';
+  ac.style.left = r.left + 'px';
+  ac.style.width = Math.max(280, r.width) + 'px';
+}
+
+function onRelicInput() {
+  const input = document.getElementById('relicSearchInput');
+  const wrap  = document.getElementById('relicInputWrap');
+  const ac    = document.getElementById('relicAC');
+  const q     = input.value.trim().toLowerCase();
+  wrap.classList.toggle('has-text', input.value.length > 0);
+
+  // No suggestions until user types
+  if (!q) { ac.innerHTML = ''; ac.classList.remove('open'); return; }
+
+  // Build candidate list:
+  // - Epics: only show if not already in slots
+  // - Common/Rare/Consumable: show even if already in slots, as long as adding
+  //   one more wouldn't exceed 3 total slots AND the build still has room
+  let candidates = allRelics.filter(r => {
+    if (!r.toLowerCase().includes(q)) return false;
+    const tier = getRelicTier(r);
+    if (tier === 'epic') {
+      // Epic: only one per slots list allowed
+      return !relicSlots.includes(r);
+    } else {
+      // Non-epic: allowed if adding one more is still <= 3 total
+      const currentCount = relicSlots.filter(s => s === r).length;
+      // Max copies of this relic in slots = max copies in any single build = 3
+      // (a build has 3 slots total so can't have more than 3 of the same)
+      return currentCount < 3 && relicSlots.length < 3;
+    }
+  });
+  candidates = candidates.slice(0, 32); // gather more before sorting
+
+  // Score each: compute preview count, then sort active before dead
+  const scored = candidates.map(r => {
+    const testSlots = [...relicSlots, r];
+    const count = [...new Set(
+      rawData.filter(d => buildMatchesSlots(d, testSlots)).map(d => d.champion)
+    )].length;
+    return { r, count };
+  });
+  scored.sort((a, b) => {
+    const aActive = a.count > 0 ? 0 : 1;
+    const bActive = b.count > 0 ? 0 : 1;
+    if (aActive !== bActive) return aActive - bActive;
+    return b.count - a.count; // among actives, most matches first
+  });
+  const top = scored.slice(0, 16);
+
+  if (top.length === 0) {
+    ac.innerHTML = `<div class="relic-ac-item" style="color:var(--text-dim)">No relics found</div>`;
+  } else {
+    ac.innerHTML = top.map(({ r, count }) => {
+      const tier = getRelicTier(r);
+      const dc   = DOT_COLORS[tier] || DOT_COLORS.common;
+      const grey = count === 0 ? ' disabled' : '';
+      const existingCount = relicSlots.filter(s => s === r).length;
+      const dupBadge = existingCount > 0 ? ` <span style="font-size:10px;opacity:0.6;margin-left:2px;">×${existingCount+1}</span>` : '';
+      return `<div class="relic-ac-item${grey}" onclick="pickRelic('${r.replace(/'/g,"\\'")}')">
+        <div class="relic-ac-dot" style="background:${dc};box-shadow:0 0 4px ${dc}"></div>
+        ${r}${dupBadge}
+        <span class="relic-ac-count">${count} champ${count!==1?'s':''}</span>
+      </div>`;
+    }).join('');
+  }
+  positionAC();
+  ac.classList.add('open');
+}
+
+function pickRelic(r) {
+  if (relicSlots.length >= 3) return;
+  const tier = getRelicTier(r);
+  // Epics: block duplicates
+  if (tier === 'epic' && relicSlots.includes(r)) return;
+  relicSlots.push(r);
+  clearRelicInput();
+  renderPills();
+  recomputeFiltered();
+  if (filtered.length === 0) { fillRows(); return; }
+  currentIdx = 0;
+  reposition(false);
+  fillRows();
+  renderDetail(filtered[currentIdx]);
+}
+
+function clearRelicInput() {
+  const input = document.getElementById('relicSearchInput');
+  const wrap  = document.getElementById('relicInputWrap');
+  const ac    = document.getElementById('relicAC');
+  if (!input) return;
+  input.value = '';
+  wrap.classList.remove('has-text');
+  ac.innerHTML = ''; ac.classList.remove('open');
+}
+
+// Close autocomplete on outside click
+document.addEventListener('click', e => {
+  if (!e.target.closest('#relicInputWrap')) {
+    const ac = document.getElementById('relicAC');
+    if (ac) { ac.innerHTML = ''; ac.classList.remove('open'); }
+  }
+});
+
+// ── TAB SWITCHING ────────────────────────────────────────────────────
+function switchTab(tab) {
+  const champView    = document.querySelector('.main-wrapper');
+  const relicView    = document.getElementById('relicIndexPanel');
+  const tierlistView = document.getElementById('tierlistPanel');
+  const btnChamps    = document.getElementById('tabChampions');
+  const btnRelics    = document.getElementById('tabRelics');
+  const btnTierlist  = document.getElementById('tabTierlist');
+
+  // Hide all panels first
+  champView.style.display    = 'none';
+  relicView.style.display    = 'none';
+  tierlistView.style.display = 'none';
+  btnChamps.classList.remove('active');
+  btnRelics.classList.remove('active');
+  if (btnTierlist) btnTierlist.classList.remove('active');
+
+  if (tab === 'champions') {
+    champView.style.display = '';
+    btnChamps.classList.add('active');
+  } else if (tab === 'relics') {
+    relicView.style.display = 'flex';
+    relicView.style.flexDirection = 'column';
+    btnRelics.classList.add('active');
+    if (!relicView._initialized) {
+      riRender();
+      relicView._initialized = true;
+    }
+  } else if (tab === 'tierlist') {
+    tierlistView.style.display = 'flex';
+    if (btnTierlist) btnTierlist.classList.add('active');
+    if (!tlInitialized) {
+      tlInit();
+    } else {
+      tlRender();
+    }
+  }
+}
+
+// ── RELIC INDEX STATE ────────────────────────────────────────────────
+let riActiveTier = 'all';
+let riActiveRelic = null;
+
+// Precompute usage counts from rawData
+function riGetUsageCounts() {
+  const counts = {};
+  for (const d of rawData) {
+    for (const r of [d.r1, d.r2, d.r3]) {
+      counts[r] = (counts[r] || 0) + 1;
+    }
+  }
+  return counts;
+}
+
+function riSetTier(tier) {
+  riActiveTier = tier;
+  document.querySelectorAll('.ri-tier-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tier === tier);
+  });
+  riRender();
+}
+
+function riOnSearch() { kcsApply('relic'); }
+function riAcSelect(name) { kcsAddChip('relic', { kind:'rel', label:name, value:name }); }
+function riClearSearch() { kcsClearAll('relic'); }
+
+// Close ri autocomplete on outside click — now handled by KCS
+
+
+function riRender() {
+  const grid     = document.getElementById('riGrid');
+  const countEl  = document.getElementById('riCount');
+  const text     = (document.getElementById('kcsRelicInput')?.value || '').toLowerCase().trim();
+  const chips    = (typeof kcsState !== 'undefined' && kcsState.relic?.chips) || [];
+  const sortMode = document.getElementById('riSort')?.value || 'uses';
+  const usage    = riGetUsageCounts();
+
+  // Gather all relics from RELIC_DB
+  let relics = Object.keys(RELIC_DB).map(name => ({
+    name,
+    ...RELIC_DB[name],
+    uses: usage[name] || 0
+  }));
+
+  // Filter by tier
+  if (riActiveTier !== 'all') {
+    relics = relics.filter(r => r.tier === riActiveTier);
+  }
+
+  // Filter by text input
+  if (text) {
+    relics = relics.filter(r =>
+      r.name.toLowerCase().includes(text) ||
+      descMatchesKeywordQuery(r.desc, text)
+    );
+  }
+
+  // Filter by chips — ALL must match
+  for (const chip of chips) {
+    if (chip.kind === 'kw' || chip.kind === 'mec') {
+      relics = relics.filter(r => descMatchesKeywordQuery(r.desc, chip.value));
+    } else if (chip.kind === 'rel') {
+      relics = relics.filter(r => r.name === chip.value);
+    }
+    // champ chip: show relics used by that champion
+    else if (chip.kind === 'champ') {
+      const champRelics = new Set();
+      rawData.filter(d => d.champion === chip.value)
+        .forEach(d => { [d.r1,d.r2,d.r3].forEach(r => { if (r) champRelics.add(r); }); });
+      relics = relics.filter(r => champRelics.has(r.name));
+    }
+  }
+
+  // Sort
+  const TIER_ORDER = { epic: 0, rare: 1, common: 2, consumable: 3 };
+  if (sortMode === 'uses') {
+    relics.sort((a, b) => b.uses - a.uses || a.name.localeCompare(b.name));
+  } else if (sortMode === 'name') {
+    relics.sort((a, b) => a.name.localeCompare(b.name));
+  } else if (sortMode === 'tier') {
+    relics.sort((a, b) => (TIER_ORDER[a.tier] ?? 9) - (TIER_ORDER[b.tier] ?? 9) || b.uses - a.uses);
+  }
+
+  countEl.textContent = `${relics.length} relic${relics.length !== 1 ? 's' : ''}`;
+
+  const TIER_COLORS = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+
+  grid.innerHTML = relics.map(r => {
+    const tc  = TIER_COLORS[r.tier] || TIER_COLORS.common;
+    const ico = r.icon
+      ? `<img src="${r.icon}" alt="${r.name}" onerror="this.parentElement.innerHTML='<span class=ri-card-icon-placeholder>💎</span>'">`
+      : `<span class="ri-card-icon-placeholder">💎</span>`;
+    const isActive = riActiveRelic === r.name ? ' active' : '';
+    const ttHTML   = buildRelicTooltipHTML(r.name, r);
+    const escaped  = ttHTML.replace(/"/g, '&quot;');
+    return `<div class="ri-card ${r.tier}${isActive}" onclick="riSelectRelic('${r.name.replace(/'/g,"\\'")}') " data-tooltip="${escaped}">
+      <div class="ri-card-tier-dot" style="background:${tc};box-shadow:0 0 4px ${tc};"></div>
+      <div class="ri-card-icon">${ico}</div>
+      <div class="ri-card-name">${r.name}</div>
+      ${r.tier !== 'consumable' ? `<div class="ri-card-uses">${r.uses} build${r.uses !== 1 ? 's' : ''}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function riSelectRelic(name) {
+  riActiveRelic = name;
+
+  // Update active card highlight
+  document.querySelectorAll('.ri-card').forEach(c => {
+    c.classList.toggle('active', c.querySelector('.ri-card-name')?.textContent === name);
+  });
+
+  const info    = RELIC_DB[name] || {};
+  const tier    = info.tier || 'common';
+  const subtype = info.subtype || '';
+  const TIER_COLORS = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+  const tc = TIER_COLORS[tier] || TIER_COLORS.common;
+
+  // All builds using this relic
+  const builds = rawData.filter(d => [d.r1, d.r2, d.r3].includes(name));
+
+  let tierLabel = tier.charAt(0).toUpperCase() + tier.slice(1);
+  if (subtype === 'signature') tierLabel += ' · Signature';
+  else if (subtype === 'general') tierLabel += ' · General';
+
+  // Source line
+  let sourceHTML = '';
+  if (info.source) {
+    sourceHTML = `<div class="ri-detail-source"><b>📦 How to get:</b> ${info.source}</div>`;
+  } else if (subtype === 'signature') {
+    sourceHTML = `<div class="ri-detail-source"><b>📦 How to get:</b> Champion Bundle · Glory Store (600 Glory)</div>`;
+  } else if (tier === 'epic' && subtype === 'general') {
+    sourceHTML = `<div class="ri-detail-source"><b>📦 How to get:</b> Gold Reliquary (duplicate protection) · Silver/Bronze Reliquary (rare)</div>`;
+  } else if (tier === 'rare') {
+    sourceHTML = `<div class="ri-detail-source"><b>📦 How to get:</b> Bronze Reliquary (10%) · Silver Reliquary · Gold Vault (30%)</div>`;
+  } else if (tier === 'common') {
+    sourceHTML = `<div class="ri-detail-source"><b>📦 How to get:</b> Bronze Reliquary (90%) · Gold Vault (30%)</div>`;
+  }
+  if (info.gloryStore) {
+    sourceHTML += `<div class="ri-detail-source" style="margin-top:4px;">🏆 ${info.gloryStore}</div>`;
+  }
+
+  const icoHTML = info.icon
+    ? `<img src="${info.icon}" alt="${name}" onerror="this.style.display='none'">`
+    : `<span style="font-size:36px;opacity:0.25;">💎</span>`;
+
+  let html = `
+    <div class="ri-detail-header">
+      <div class="ri-detail-icon">${icoHTML}</div>
+      <div>
+        <div class="ri-detail-name" style="color:${tc}">${name}</div>
+        <div class="ri-detail-meta">
+          <span style="width:8px;height:8px;border-radius:50%;background:${tc};box-shadow:0 0 4px ${tc};display:inline-block;flex-shrink:0;"></span>
+          ${tierLabel}
+        </div>
+      </div>
+    </div>
+    <div class="ri-detail-desc">${highlightKeywords(info.desc || '')}</div>
+    ${info.champion && subtype === 'signature' ? `<div class="ri-detail-source">Signature relic for <b>${info.champion}</b></div>` : ''}
+    ${sourceHTML}
+    ${tier !== 'consumable' ? `<div class="ri-detail-builds-title">${builds.length} build${builds.length !== 1 ? 's' : ''} using this relic</div>` : ''}
+  `;
+
+  // Group builds by champion
+  const byChamp = {};
+  for (const b of builds) {
+    if (!byChamp[b.champion]) byChamp[b.champion] = [];
+    byChamp[b.champion].push(b);
+  }
+
+  Object.entries(byChamp).sort(([a],[b]) => a.localeCompare(b)).forEach(([champ, champBuilds], gi) => {
+    champBuilds.forEach((b, bi) => {
+      const relics = [b.r1, b.r2, b.r3];
+      const badges = relics.map(r => {
+        const t = getRelicTier(r);
+        const highlight = r === name ? ' filter-match' : '';
+        return `<div class="relic-badge ${t}${highlight}" style="font-size:11px;padding:3px 8px;"><div class="relic-dot"></div>${r}</div>`;
+      }).join('');
+
+      const starMatch = b.star.match(/^([^-]+)(?:-(.+))?$/);
+      const starStr   = starMatch ? starMatch[1].trim() : b.star;
+      const levelStr  = starMatch?.[2] ? starMatch[2].trim() : '';
+      const players   = b.player.split(',').map(p => p.trim()).filter(Boolean);
+      const imgSrc    = champImg(champ);
+      const champImgHTML = imgSrc
+        ? `<img src="${imgSrc}" alt="${champ}" onerror="this.style.display='none'">`
+        : '';
+
+      // Find the build's index within all builds for this champion (matches renderDetail order)
+      const champBuildsAll = rawData.filter(d => d.champion === champ);
+      const buildGlobalIdx = champBuildsAll.indexOf(b);
+
+      html += `<div class="ri-build-row" style="animation-delay:${(gi * 3 + bi) * 0.03}s"
+        onclick="jumpToBuild('${champ.replace(/'/g,"\\'")}', ${buildGlobalIdx})"
+        title="Jump to this build in Champions view">
+        <div class="ri-build-row-inner">
+          <div class="ri-build-main">
+            <div class="ri-build-champ">${champImgHTML}${champ}</div>
+            <div class="ri-build-relics">${badges}</div>
+            <div class="ri-build-star">⭐ ${starStr}${levelStr ? ` · Lvl ${levelStr}` : ''}</div>
+            <div class="ri-build-players">
+              <span class="ri-build-players-label">Players:&nbsp;</span>
+              ${players.map(p => `<span class="player-chip" onclick="event.stopPropagation();openPlayerDrawer(this.textContent.trim())">${p}</span>`).join('')}
+            </div>
+          </div>
+        </div>
+      </div>`;
+    });
+  });
+
+  // Store keyword data on the panel for hover
+  const kwList = getRelicKeywords(info.desc || '');
+  const panel = document.getElementById('riDetailPanel');
+  panel.innerHTML = html;
+
+  // Attach hover on the whole detail panel → show popup in grid area
+  if (kwList.length > 0) {
+    const kwData = kwList.map(({key, data}) => ({key, icon: data.icon, desc: data.desc}));
+    panel.onmouseenter = () => riShowKwPopup(kwData);
+    panel.onmouseleave = () => riHideKwPopup();
+  } else {
+    panel.onmouseenter = null;
+    panel.onmouseleave = null;
+    riHideKwPopup();
+  }
+}
+
+// ── RELIC INDEX KEYWORD POPUP ─────────────────────────────────────────
+const riKwPopup = document.getElementById('riKwPopup');
+
+function riShowKwPopup(kwList) {
+  riKwPopup.innerHTML = `
+    <div class="ri-kw-popup-title">Keywords</div>
+    ${kwList.map(kw => `
+      <div class="ri-kw-popup-chip">
+        <div class="ri-kw-popup-icon">${kw.icon}</div>
+        <div class="ri-kw-popup-body">
+          <div class="ri-kw-popup-name">${kw.key}</div>
+          <div class="ri-kw-popup-desc">${kw.desc}</div>
+        </div>
+      </div>`).join('')}
+  `;
+  riKwPopup.classList.add('visible');
+
+  // Position inside the grid area (left panel), vertically centered
+  const grid   = document.getElementById('riGrid');
+  const panel  = document.getElementById('riDetailPanel');
+  const gr     = grid.getBoundingClientRect();
+  const pr     = panel.getBoundingClientRect();
+  const pw     = riKwPopup.offsetWidth;
+  const ph     = riKwPopup.offsetHeight;
+  const vh     = window.innerHeight;
+  const gap    = 16;
+
+  // Horizontally: right-aligned inside the grid, just left of the detail panel border
+  const left = Math.max(gr.left + gap, pr.left - pw - gap);
+
+  // Vertically: start from top of the detail panel, grow down, clamp to viewport
+  let top = pr.top + gap;
+  if (top + ph > vh - 8) top = vh - ph - 8;
+  if (top < 8) top = 8;
+
+  riKwPopup.style.left = left + 'px';
+  riKwPopup.style.top  = top  + 'px';
+}
+
+function riHideKwPopup() {
+  riKwPopup.classList.remove('visible');
+}
+
+// ── BUILD SELECTION ───────────────────────────────────────────────────
+function selectBuild(card) {
+  // Deselect all, then select clicked
+  document.querySelectorAll('.build-card.selected').forEach(c => {
+    c.classList.remove('selected', 'jump-highlight');
+  });
+  card.classList.add('selected');
+}
+
+// Click on empty detail area to deselect
+document.addEventListener('click', e => {
+  const detail = document.getElementById('detail');
+  if (detail && detail.contains(e.target) && !e.target.closest('.build-card')) {
+    document.querySelectorAll('.build-card.selected').forEach(c => {
+      c.classList.remove('selected', 'jump-highlight');
+    });
+  }
+});
+
+// ── JUMP TO BUILD ────────────────────────────────────────────────────
+function jumpToBuild(champion, buildIdx) {
+  // 1. Switch to Champions tab
+  switchTab('champions');
+
+  // 2. Clear relic filter so all builds are visible
+  relicSlots.length = 0;
+  renderPills();
+  recomputeFiltered();
+
+  // 3. Navigate drum to this champion
+  const idx = filtered.indexOf(champion);
+  if (idx >= 0) {
+    currentIdx = idx;
+    reposition(false);
+    fillRows();
+  }
+
+  // 4. Render detail for this champion
+  renderDetail(champion);
+
+  // 5. After render settles, select + scroll to the target build card
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const card = document.querySelector(`.build-card[data-build-id="${champion}::${buildIdx}"]`);
+      if (!card) return;
+      // Clear any previous selection
+      document.querySelectorAll('.build-card.selected').forEach(c => c.classList.remove('selected', 'jump-highlight'));
+      card.classList.add('selected', 'jump-highlight');
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // Remove jump-highlight after animation but keep selected
+      setTimeout(() => card.classList.remove('jump-highlight'), 1100);
+    });
+  });
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────
+requestAnimationFrame(() => {
+  buildPool();
+  renderDetail(filtered[0]);
+});
+
+
+
+// ── PLAYER DRAWER ────────────────────────────────────────────────────
+
+function openPlayerDrawer(playerName) {
+  const builds = rawData.filter(d =>
+    d.player.split(',').map(p => p.trim()).includes(playerName)
+  );
+
+  document.getElementById('pdPlayerName').textContent = playerName;
+  document.getElementById('pdBuildCount').textContent =
+    builds.length + ' build' + (builds.length !== 1 ? 's' : '');
+
+  // Group by champion
+  const byChamp = {};
+  for (const b of builds) {
+    if (!byChamp[b.champion]) byChamp[b.champion] = [];
+    byChamp[b.champion].push(b);
+  }
+
+  const TIER_COLORS = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+
+  let html = '';
+  Object.entries(byChamp).sort(([a],[b]) => a.localeCompare(b)).forEach(([champ, champBuilds]) => {
+    const imgSrc = champImg(champ);
+    const imgHTML = imgSrc
+      ? `<img src="${imgSrc}" alt="${champ}" onerror="this.style.display='none'">`
+      : `<span style="font-size:14px">${EMOJI_FALLBACK[champ] || '⚔️'}</span>`;
+
+    html += `<div class="pd-champ-group">
+      <div class="pd-champ-label">${imgHTML}${champ}</div>`;
+
+    champBuilds.forEach(b => {
+      const relics = [b.r1, b.r2, b.r3];
+      const starMatch = b.star.match(/^([^-]+)(?:-(.+))?$/);
+      const starStr = starMatch ? starMatch[1].trim() : b.star;
+      const levelStr = starMatch?.[2] ? ' · Lvl ' + starMatch[2].trim() : '';
+
+      const badges = relics.map(r => {
+        const t = getRelicTier(r);
+        const tc = TIER_COLORS[t] || TIER_COLORS.common;
+        return `<div class="relic-badge ${t}" style="font-size:10px;padding:2px 7px;">
+          <div class="relic-dot"></div>${r}
+        </div>`;
+      }).join('');
+
+      // Find build index for jumpToBuild
+      const champBuildsAll = rawData.filter(d => d.champion === champ);
+      const buildIdx = champBuildsAll.indexOf(b);
+
+      html += `<div class="pd-build-row" onclick="pdJumpToBuild('${champ.replace(/'/g,"\'")}', ${buildIdx})">
+        <div style="flex:1;min-width:0;">
+          <div class="pd-build-relics">${badges}</div>
+          <div class="pd-build-jump">Jump to build</div>
+        </div>
+        <div class="pd-build-star">⭐ ${starStr}${levelStr}</div>
+      </div>`;
+    });
+
+    html += `</div>`;
+  });
+
+  document.getElementById('pdBody').innerHTML = html;
+  document.getElementById('playerDrawer').classList.add('open');
+  document.getElementById('playerDrawerOverlay').classList.add('open');
+}
+
+function closePlayerDrawer() {
+  document.getElementById('playerDrawer').classList.remove('open');
+  document.getElementById('playerDrawerOverlay').classList.remove('open');
+}
+
+function pdJumpToBuild(champion, buildIdx) {
+  closePlayerDrawer();
+  // Small delay so drawer closes before jumping
+  setTimeout(() => jumpToBuild(champion, buildIdx), 180);
+}
+
+// Close on Escape key
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closePlayerDrawer();
+});
+
+
+// ══════════════════════════════════════════════════════════
+// TIER LIST SYSTEM
+// ══════════════════════════════════════════════════════════
+
+
+// ── State ──────────────────────────────────────────────────
+let tlCurrentPreset = 'relic-usage';
+let tlShowMode  = 'relics';   // 'relics' | 'champs'
+let tlFilters   = { epic:true, rare:true, common:true, consumable:false };
+let tlDragSrc   = null;
+let tlDragTierSrc = null;
+let tlInitialized = false;
+
+const TL_COLORS = [
+  { key:'S',  label:'S',  bg:'#ff7f7f', text:'#cc0000' },
+  { key:'A',  label:'A',  bg:'#ffbf7f', text:'#cc5500' },
+  { key:'B',  label:'B',  bg:'#ffdf7f', text:'#997700' },
+  { key:'C',  label:'C',  bg:'#ffff7f', text:'#888800' },
+  { key:'D',  label:'D',  bg:'#bfff7f', text:'#448800' },
+  { key:'E',  label:'E',  bg:'#7fff7f', text:'#117711' },
+  { key:'F',  label:'F',  bg:'#7fffff', text:'#007777' },
+  { key:'G',  label:'G',  bg:'#7fbfff', text:'#1144cc' },
+  { key:'H',  label:'H',  bg:'#7f7fff', text:'#3300cc' },
+  { key:'I',  label:'I',  bg:'#bf7fff', text:'#6600cc' },
+  { key:'J',  label:'J',  bg:'#ff7fff', text:'#cc0077' },
+  { key:'K',  label:'K',  bg:'#ff7fbf', text:'#aa0044' },
+  { key:'W',  label:'W',  bg:'#e0e0e0', text:'#444444' },
+  { key:'X',  label:'X',  bg:'#606060', text:'#cccccc' },
+];
+
+const DEFAULT_TIERS = [
+  { id:'t1', label:'Must Get',  color:'S', items:[] },
+  { id:'t2', label:'Very Good', color:'A', items:[] },
+  { id:'t3', label:'Useful',    color:'B', items:[] },
+  { id:'t4', label:'Niche',     color:'C', items:[] },
+  { id:'t5', label:'Weak',      color:'D', items:[] },
+  { id:'t6', label:'Skip',      color:'F', items:[] },
+];
+
+let tlTiers = [];
+let tlUnrankedItems = [];
+let tlTierCounter = 10;
+
+// ── Init & preset loading ───────────────────────────────────
+function tlInit() {
+  if (!tlInitialized) {
+    tlTiers = DEFAULT_TIERS.map(t => ({ ...t, items:[] }));
+    tlInitialized = true;
+  }
+  tlLoadPreset(tlCurrentPreset);
+  tlPoolSearchInit();
+}
+
+function tlLoadPreset(preset) {
+  tlCurrentPreset = preset;
+  document.querySelectorAll('.tl-preset-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.preset === preset);
+  });
+  // Auto-switch show mode: relic presets → relics only; champ preset → champs only
+  const isChampPreset = (preset === 'champ-diversity');
+  tlToggleShow(isChampPreset ? 'champs' : 'relics');
+
+  tlTiers = DEFAULT_TIERS.map(t => ({ ...t, items:[] }));
+
+  // Set smart title
+  const titleInput = document.getElementById('tlTitleInput');
+  if (titleInput) {
+    const titles = {
+      'relic-usage':     'Relic Usage Tier List',
+      'relic-diversity': 'Relic Flexibility Tier List',
+      'champ-diversity': 'Champion Build Variety',
+    };
+    titleInput.value = titles[preset] || 'My Tier List';
+  }
+
+  tlFillFromPreset();
+  tlRender();
+}
+
+function tlGetRelicItems() {
+  // Build sorted relic list based on preset
+  const counts = {};
+  const champSets = {};
+  for (const d of rawData) {
+    for (const r of [d.r1, d.r2, d.r3]) {
+      if (!r) continue;
+      counts[r] = (counts[r] || 0) + 1;
+      if (!champSets[r]) champSets[r] = new Set();
+      champSets[r].add(d.champion);
+    }
+  }
+  let relics = Object.keys(RELIC_DB).filter(r => {
+    const info = RELIC_DB[r];
+    if (!tlFilters[info.tier || 'common']) return false;
+    return true;
+  });
+
+  if (tlCurrentPreset === 'relic-usage') {
+    relics.sort((a,b) => (counts[b]||0) - (counts[a]||0));
+  } else if (tlCurrentPreset === 'relic-diversity') {
+    relics.sort((a,b) => ((champSets[b]||{size:0}).size) - ((champSets[a]||{size:0}).size));
+  } else {
+    relics.sort((a,b) => (counts[b]||0) - (counts[a]||0));
+  }
+
+  return relics.map(r => {
+    const info = RELIC_DB[r] || {};
+    return {
+      id: 'relic::' + r,
+      name: r,
+      type: 'relic',
+      tier: info.tier || 'common',
+      icon: info.icon || null,
+      score: tlCurrentPreset === 'relic-diversity'
+        ? (champSets[r]||{size:0}).size
+        : (counts[r]||0),
+    };
+  });
+}
+
+function tlGetChampItems() {
+  const counts = {};
+  for (const d of rawData) counts[d.champion] = (counts[d.champion]||0)+1;
+  const champs = [...new Set(rawData.map(d=>d.champion))];
+  champs.sort((a,b)=>(counts[b]||0)-(counts[a]||0));
+  return champs.map(c => ({
+    id: 'champ::' + c,
+    name: c,
+    type: 'champ',
+    score: counts[c]||0,
+    icon: champImg(c),
+  }));
+}
+
+function tlGetAllItems() {
+  const relics = tlShowMode !== 'champs' ? tlGetRelicItems() : [];
+  const champs = tlShowMode !== 'relics' ? tlGetChampItems() : [];
+  return [...relics, ...champs];
+}
+
+function tlFillFromPreset() {
+  const items = tlGetAllItems();
+  const total = items.length;
+
+  // Distribute into tiers by auto logic
+  let cuts;
+  if (tlCurrentPreset === 'relic-usage' || tlCurrentPreset === 'relic-diversity') {
+    // Must Get: top 5, Very Good: next 10, Useful: next 20, Niche: next until last 10, Bad: last 10
+    const t1end = 5;
+    const t2end = 15;
+    const t3end = 35;
+    const t5start = Math.max(total - 10, t3end);
+    const t4end = t5start;
+    cuts = [t1end, t2end, t3end, t4end, t5start, total];
+  } else {
+    // Champion diversity: split by quartile-ish
+    const q = Math.floor(total / 6);
+    cuts = [q, q*2, q*3, q*4, q*5, total];
+  }
+
+  tlTiers.forEach((tier, i) => {
+    const from = i === 0 ? 0 : cuts[i-1];
+    const to   = cuts[i];
+    tier.items = items.slice(from, to).map(it => ({...it}));
+  });
+  tlUnrankedItems = [];
+}
+
+// ── Render ─────────────────────────────────────────────────
+function tlRender() {
+  const tiersEl    = document.getElementById('tlTiers');
+  const unrankedEl = document.getElementById('tlUnranked');
+  if (!tiersEl) return;
+
+  // Update description banner
+  tlUpdateDescBanner();
+
+  tiersEl.innerHTML = '';
+  tlTiers.forEach((tier, ti) => {
+    const row = document.createElement('div');
+    row.className = 'tl-tier';
+    row.dataset.color = tier.color;
+    row.dataset.tierid = tier.id;
+    // row is NOT draggable — only the label wrap is, so the items area can't accidentally drag the tier
+
+    const colorInfo = TL_COLORS.find(c=>c.key===tier.color) || TL_COLORS[0];
+
+    row.innerHTML = `
+      <div class="tl-tier-label-wrap" draggable="true" style="background:${colorInfo.bg}22;color:${colorInfo.text};"
+        onclick="tlOpenEditPopup('${tier.id}', event)"
+        title="Click to rename or change color · Drag to reorder">
+        <div class="tl-drag-handle">⠿</div>
+        <div class="tl-tier-label">${tier.label}</div>
+      </div>
+      <div class="tl-tier-items" data-tierid="${tier.id}"></div>
+    `;
+
+    const labelWrap = row.querySelector('.tl-tier-label-wrap');
+
+    // Tier drag-to-reorder — only fires from the label wrap
+    labelWrap.addEventListener('dragstart', e => {
+      tlDragTierSrc = tier.id;
+      row.classList.add('tier-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', 'tier::' + tier.id);
+    });
+    labelWrap.addEventListener('dragend', () => {
+      row.classList.remove('tier-dragging');
+      document.querySelectorAll('.tl-tier').forEach(r => r.classList.remove('tier-drag-over'));
+      tlDragTierSrc = null;
+    });
+    row.addEventListener('dragover', e => {
+      if (tlDragTierSrc && tlDragTierSrc !== tier.id) { e.preventDefault(); row.classList.add('tier-drag-over'); }
+    });
+    row.addEventListener('dragleave', () => row.classList.remove('tier-drag-over'));
+    row.addEventListener('drop', e => {
+      row.classList.remove('tier-drag-over');
+      if (!tlDragTierSrc || tlDragTierSrc === tier.id) return;
+      const data = e.dataTransfer.getData('text/plain');
+      if (!data.startsWith('tier::')) return;
+      e.preventDefault();
+      const fromIdx = tlTiers.findIndex(t=>t.id===tlDragTierSrc);
+      const toIdx   = tlTiers.findIndex(t=>t.id===tier.id);
+      if (fromIdx < 0 || toIdx < 0) return;
+      const [moved] = tlTiers.splice(fromIdx, 1);
+      tlTiers.splice(toIdx, 0, moved);
+      tlDragTierSrc = null;
+      tlRender();
+    });
+
+    const itemsEl = row.querySelector('.tl-tier-items');
+    tier.items.forEach(item => { itemsEl.appendChild(tlMakeItemEl(item)); });
+    tlSetupDropzone(itemsEl);
+    tiersEl.appendChild(row);
+  });
+
+  // Unranked
+  unrankedEl.innerHTML = '';
+  tlUnrankedItems.forEach(item => { unrankedEl.appendChild(tlMakeItemEl(item)); });
+  tlSetupDropzone(unrankedEl);
+}
+
+// ── Description banner ──────────────────────────────────────
+const TL_PRESET_INFO = {
+  'relic-usage': {
+    title: '💎 Relic Usage Frequency',
+    desc: 'Ranks relics by how often they appear across all recorded builds. Top tiers = relics that are picked constantly. Bottom tiers = relics rarely used — not necessarily bad, just uncommon in practice.',
+    tierLabels: ['Must Have','Frequently Picked','Situationally Good','Niche Picks','Rarely Seen','Almost Unused'],
+  },
+  'relic-diversity': {
+    title: '🌈 Relic Champion Flexibility',
+    desc: 'Ranks relics by how many different champions use them. Top tiers = relics that work on almost any champion. Bottom tiers = relics that only fit one or two specific champions — they can still be excellent on the right champion.',
+    tierLabels: ['Universally Flexible','Works on Many Champs','Moderate Fit Range','Few Champions','Very Specific Fit','Single-Champion Only'],
+  },
+  'champ-diversity': {
+    title: '⚔️ Champion Build Variety',
+    desc: 'Ranks champions by how many different builds are recorded for them. Top tiers = champions with many viable relic combos and playstyles. Bottom tiers = champions with only one or two known builds — this does NOT mean they are weak.',
+    tierLabels: ['Many Viable Builds','Several Builds Known','A Few Options','Limited Builds','One or Two Builds','Only One Build Found'],
+  },
+};
+
+function tlUpdateDescBanner() {
+  const banner = document.getElementById('tlDescBanner');
+  if (!banner) return;
+  const info = TL_PRESET_INFO[tlCurrentPreset] || TL_PRESET_INFO['relic-usage'];
+  banner.innerHTML = `<strong>${info.title}</strong> — ${info.desc}`;
+
+  // Update tier labels if they are still at defaults
+  const defLabels = DEFAULT_TIERS.map(t=>t.label);
+  tlTiers.forEach((tier, i) => {
+    const smart = info.tierLabels[i];
+    if (!smart) return;
+    // Only auto-rename if label is still a default label (S/A/B/C/D/F or original names)
+    const isDefault = defLabels.includes(tier.label) ||
+      ['S','A','B','C','D','F','Must Get','Very Good','Useful','Niche','Weak','Skip',
+       'Must Have','Frequently Picked','Situationally Good','Niche Picks','Rarely Seen','Almost Unused',
+       'Works on Many Champs','Moderate Fit Range','Few Champions','Very Specific Fit','Single-Champion Only','Universally Flexible',
+       'Many Viable Builds','Several Builds Known','A Few Options','Limited Builds','One or Two Builds','Only One Build Found'
+      ].includes(tier.label);
+    if (isDefault) tier.label = smart;
+  });
+}
+
+// ── Tier label edit popup ───────────────────────────────────
+function tlOpenEditPopup(tierId, e) {
+  e.stopPropagation();
+  const existing = document.getElementById('tlEditPopup');
+  if (existing) existing.remove();
+
+  const tier = tlTiers.find(t=>t.id===tierId);
+  if (!tier) return;
+
+  const wrap = document.createElement('div');
+  wrap.id = 'tlEditPopup';
+  wrap.className = 'tl-edit-popup';
+  wrap.innerHTML = `
+    <div class="tl-edit-popup-title">✏️ Edit Tier</div>
+    <label class="tl-edit-label">Name</label>
+    <input class="tl-edit-input" id="tlEditName" value="${tier.label.replace(/"/g,'&quot;')}" maxlength="40" />
+    <label class="tl-edit-label" style="margin-top:12px;">Color</label>
+    <div class="tl-edit-colors">
+      ${TL_COLORS.map(c=>`<div class="tl-edit-swatch${tier.color===c.key?' active':''}"
+        style="background:${c.bg};" title="${c.label}" data-key="${c.key}"
+        onclick="tlEditPickColor(this)"></div>`).join('')}
+    </div>
+    <div class="tl-edit-actions">
+      <button class="tl-edit-btn danger" onclick="tlDeleteTier('${tierId}');document.getElementById('tlEditPopup')?.remove()">🗑 Delete</button>
+      <button class="tl-edit-btn" onclick="document.getElementById('tlEditPopup')?.remove()">Cancel</button>
+      <button class="tl-edit-btn gold" onclick="tlEditSave('${tierId}')">✓ Save</button>
+    </div>
+  `;
+
+  document.body.appendChild(wrap);
+  const rect = e.currentTarget.getBoundingClientRect();
+  let top  = rect.bottom + 6;
+  let left = rect.left;
+  if (left + 270 > window.innerWidth)  left = window.innerWidth - 280;
+  if (top  + 230 > window.innerHeight) top  = rect.top - 238;
+  wrap.style.top  = top + 'px';
+  wrap.style.left = left + 'px';
+
+  setTimeout(() => { const n = document.getElementById('tlEditName'); if(n){n.focus();n.select();} }, 50);
+  setTimeout(() => {
+    document.addEventListener('click', function closePopup(ev) {
+      if (!wrap.contains(ev.target)) { wrap.remove(); document.removeEventListener('click', closePopup); }
+    });
+  }, 20);
+}
+
+function tlEditPickColor(el) {
+  el.closest('.tl-edit-colors').querySelectorAll('.tl-edit-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  const popup = document.getElementById('tlEditPopup');
+  if (popup) popup.dataset.pendingColor = el.dataset.key;
+}
+
+function tlEditSave(tierId) {
+  const tier = tlTiers.find(t=>t.id===tierId);
+  if (!tier) return;
+  const nameEl = document.getElementById('tlEditName');
+  const popup  = document.getElementById('tlEditPopup');
+  if (nameEl && nameEl.value.trim()) tier.label = nameEl.value.trim();
+  if (popup && popup.dataset.pendingColor) tier.color = popup.dataset.pendingColor;
+  popup?.remove();
+  tlRender();
+}
+
+// ── Item Detail Popup ────────────────────────────────────────
+function tlOpenItemPopup(item) {
+  document.getElementById('tlItemPopup')?.remove();
+
+  const TIER_COLORS = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+  const TIER_BG     = { epic:'var(--epic-bg)', rare:'var(--rare-bg)', common:'var(--common-bg)', consumable:'var(--consumable-bg)' };
+
+  const overlay = document.createElement('div');
+  overlay.id = 'tlItemPopup';
+  overlay.className = 'tl-item-popup-overlay';
+
+  let innerHTML = '';
+
+  if (item.type === 'relic') {
+    const relicInfo = RELIC_DB[item.name] || {};
+    const tier = relicInfo.tier || 'common';
+    const color = TIER_COLORS[tier] || 'var(--common)';
+    const bg    = TIER_BG[tier]    || 'var(--common-bg)';
+
+    // Usage stats from builds
+    const builds = rawData.filter(d => d.r1===item.name || d.r2===item.name || d.r3===item.name);
+    const champSet = new Set(builds.map(d => d.champion));
+    const usageCount = builds.length;
+    const champCount = champSet.size;
+
+    // Top 4 most frequent champions that use this relic
+    const champFreq = {};
+    builds.forEach(d => { champFreq[d.champion] = (champFreq[d.champion]||0)+1; });
+    const topChamps = Object.entries(champFreq).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([c])=>c);
+
+    const imgHTML = relicInfo.icon
+      ? `<img class="tl-item-popup-img" src="${relicInfo.icon}" alt="${item.name}" onerror="this.style.display='none'">`
+      : `<div class="tl-item-popup-img-placeholder">💎</div>`;
+
+    innerHTML = `
+      <div class="tl-item-popup-header">
+        ${imgHTML}
+        <div class="tl-item-popup-title-wrap">
+          <div class="tl-item-popup-name">${item.name}</div>
+          <span class="tl-item-popup-badge" style="background:${bg};color:${color};border:1px solid ${color}33;">
+            ${tier.charAt(0).toUpperCase()+tier.slice(1)} Relic
+          </span>
+        </div>
+      </div>
+      <div class="tl-item-popup-divider"></div>
+      <div class="tl-item-popup-desc">${relicInfo.desc || 'No description available.'}</div>
+      ${usageCount > 0 ? `
+        <div class="tl-item-popup-section-title">Build Stats</div>
+        <div class="tl-item-popup-stat">
+          <span class="tl-item-popup-stat-label">Recorded builds</span>
+          <span class="tl-item-popup-stat-val">${usageCount}</span>
+        </div>
+        <div class="tl-item-popup-stat">
+          <span class="tl-item-popup-stat-label">Champions using it</span>
+          <span class="tl-item-popup-stat-val">${champCount}</span>
+        </div>
+        ${topChamps.length ? `
+          <div class="tl-item-popup-section-title" style="margin-top:14px;">Common on</div>
+          <div class="tl-item-popup-relics">
+            ${topChamps.map(c => {
+              const img = champImg(c);
+              return `<div class="tl-item-popup-relic-chip">
+                ${img ? `<img src="${img}" alt="${c}" onerror="this.style.display='none'">` : '⚔️'}
+                ${c}
+              </div>`;
+            }).join('')}
+          </div>` : ''}
+      ` : ''}
+      ${relicInfo.source ? `<div class="tl-item-popup-source">📌 ${relicInfo.source}</div>` : ''}
+    `;
+
+  } else if (item.type === 'champ') {
+    const champName = item.name;
+    const builds = rawData.filter(d => d.champion === champName);
+    const buildCount = builds.length;
+    const imgSrc = champImg(champName);
+
+    // Top 5 most used relics for this champion
+    const relicFreq = {};
+    builds.forEach(d => {
+      [d.r1, d.r2, d.r3].forEach(r => { if (r) relicFreq[r] = (relicFreq[r]||0)+1; });
+    });
+    const topRelics = Object.entries(relicFreq).sort((a,b)=>b[1]-a[1]).slice(0,5).map(([r])=>r);
+
+    const imgHTML = imgSrc
+      ? `<img class="tl-item-popup-img" src="${imgSrc}" alt="${champName}" onerror="this.style.display='none'">`
+      : `<div class="tl-item-popup-img-placeholder">⚔️</div>`;
+
+    innerHTML = `
+      <div class="tl-item-popup-header">
+        ${imgHTML}
+        <div class="tl-item-popup-title-wrap">
+          <div class="tl-item-popup-name">${champName}</div>
+          <span class="tl-item-popup-badge" style="background:rgba(74,158,255,0.1);color:var(--accent);border:1px solid rgba(74,158,255,0.3);">
+            Champion
+          </span>
+        </div>
+      </div>
+      <div class="tl-item-popup-divider"></div>
+      <div class="tl-item-popup-section-title">Build Stats</div>
+      <div class="tl-item-popup-stat">
+        <span class="tl-item-popup-stat-label">Recorded builds</span>
+        <span class="tl-item-popup-stat-val">${buildCount}</span>
+      </div>
+      ${topRelics.length ? `
+        <div class="tl-item-popup-section-title" style="margin-top:14px;">Most used relics</div>
+        <div class="tl-item-popup-relics">
+          ${topRelics.map(r => {
+            const ri = RELIC_DB[r] || {};
+            const tc = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' }[ri.tier] || 'var(--common)';
+            return `<div class="tl-item-popup-relic-chip" style="border-color:${tc}33;">
+              ${ri.icon ? `<img src="${ri.icon}" alt="${r}" onerror="this.style.display='none'">` : '💎'}
+              ${r}
+            </div>`;
+          }).join('')}
+        </div>` : ''}
+    `;
+  }
+
+  overlay.innerHTML = `
+    <div class="tl-item-popup">
+      <button class="tl-item-popup-close" onclick="document.getElementById('tlItemPopup')?.remove()">✕</button>
+      ${innerHTML}
+    </div>
+  `;
+
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.remove();
+  });
+
+  document.body.appendChild(overlay);
+}
+
+function tlMakeItemEl(item) {
+  const el = document.createElement('div');
+  el.className = 'tl-item';
+  el.draggable = true;
+  el.dataset.itemid = item.id;
+
+  const TIER_COLORS_MAP = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+
+  let imgHTML = '';
+  if (item.type === 'relic') {
+    const tc = TIER_COLORS_MAP[item.tier] || 'var(--common)';
+    if (item.icon) {
+      imgHTML = `<img src="${item.icon}" class="tl-item-img-relic" alt="${item.name}" onerror="this.style.display='none'">`;
+    } else {
+      imgHTML = `<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:22px;opacity:0.5;">💎</div>`;
+    }
+    el.innerHTML = `
+      <div class="tl-item-dot" style="background:${tc};box-shadow:0 0 4px ${tc};"></div>
+      ${imgHTML}
+      <div class="tl-item-name">${item.name}</div>`;
+  } else {
+    if (item.icon) {
+      imgHTML = `<img src="${item.icon}" alt="${item.name}" onerror="this.style.display='none'" style="width:44px;height:44px;border-radius:50%;object-fit:cover;">`;
+    } else {
+      imgHTML = `<div style="width:44px;height:44px;display:flex;align-items:center;justify-content:center;font-size:24px;">⚔️</div>`;
+    }
+    el.innerHTML = `${imgHTML}<div class="tl-item-name">${item.name}</div>`;
+  }
+
+  // Drag events
+  el.addEventListener('dragstart', e => {
+    tlDragSrc = item;
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', item.id);
+  });
+  el.addEventListener('dragend', () => {
+    el.classList.remove('dragging');
+    tlClearDropIndicators();
+    document.querySelectorAll('.tl-tier').forEach(r => r.classList.remove('drag-over'));
+    document.querySelectorAll('.tl-unranked-pool').forEach(p => p.classList.remove('drag-over'));
+  });
+
+  // Click to open detail popup (only if not a drag)
+  let tlItemDragMoved = false;
+  el.addEventListener('mousedown', () => { tlItemDragMoved = false; });
+  el.addEventListener('mousemove', () => { tlItemDragMoved = true; });
+  el.addEventListener('click', e => {
+    if (tlItemDragMoved) return;
+    e.stopPropagation();
+    tlOpenItemPopup(item);
+  });
+
+  // Show insertion indicator when dragging over this item
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'move';
+    tlClearDropIndicators();
+    const rect = el.getBoundingClientRect();
+    const mid = rect.left + rect.width * 0.35;
+    if (e.clientX < mid) {
+      el.classList.add('drop-before');
+    } else {
+      el.classList.add('drop-after');
+    }
+  });
+
+  // Drop directly onto another item — insert before or after it
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!tlDragSrc || tlDragSrc.id === item.id) { tlClearDropIndicators(); return; }
+
+    const rect = el.getBoundingClientRect();
+    const insertBefore = e.clientX < rect.left + rect.width * 0.35;
+
+    // Find which tier/pool contains the target item
+    const container = el.closest('.tl-tier-items') || el.closest('.tl-unranked-pool');
+    const tierId = container?.dataset.tierid;
+
+    // Remove dragged item from wherever it currently lives FIRST —
+    // tlRemoveItemFromAll replaces t.items with a new array via .filter(),
+    // so we must re-fetch targetList AFTER removal or we'd splice into a stale array.
+    tlRemoveItemFromAll(tlDragSrc.id);
+
+    const targetList = tierId
+      ? tlTiers.find(t => t.id === tierId)?.items
+      : tlUnrankedItems;
+
+    if (!targetList) { tlClearDropIndicators(); return; }
+
+    // Find target index and insert before or after it
+    const targetIdx = targetList.findIndex(i => i.id === item.id);
+    const insertIdx = targetIdx === -1
+      ? targetList.length
+      : (insertBefore ? targetIdx : targetIdx + 1);
+
+    targetList.splice(insertIdx, 0, {...tlDragSrc});
+    const droppedId = tlDragSrc.id;
+    tlDragSrc = null;
+    tlClearDropIndicators();
+    tlRender();
+    tlHighlightDropped(droppedId);
+  });
+
+  return el;
+}
+
+// Highlight the just-dropped item — blinks 3x then fades out
+function tlHighlightDropped(itemId) {
+  // Wait one frame so tlRender() has rebuilt the DOM
+  requestAnimationFrame(() => {
+    const el = document.querySelector(`.tl-item[data-itemid="${itemId}"]`);
+    if (!el) return;
+    el.classList.remove('just-dropped');
+    // Force reflow so re-adding the class restarts the animation
+    void el.offsetWidth;
+    el.classList.add('just-dropped');
+    el.addEventListener('animationend', () => el.classList.remove('just-dropped'), { once: true });
+  });
+}
+
+// Clear all drop-before/drop-after indicators
+function tlClearDropIndicators() {
+  document.querySelectorAll('.tl-item.drop-before, .tl-item.drop-after').forEach(el => {
+    el.classList.remove('drop-before', 'drop-after');
+  });
+}
+
+function tlSetupDropzone(el) {
+  // dragover on the container itself (empty space / between items)
+  el.addEventListener('dragover', e => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const tier = el.closest('.tl-tier');
+    if (tier) tier.classList.add('drag-over');
+    else el.classList.add('drag-over');
+    // If not hovering directly over a child item, clear indicators
+    if (!e.target.closest('.tl-item')) tlClearDropIndicators();
+  });
+  el.addEventListener('dragleave', e => {
+    // Only clear if leaving the container entirely
+    if (el.contains(e.relatedTarget)) return;
+    const tier = el.closest('.tl-tier');
+    if (tier) tier.classList.remove('drag-over');
+    else el.classList.remove('drag-over');
+    tlClearDropIndicators();
+  });
+  el.addEventListener('drop', e => {
+    e.preventDefault();
+    const tier = el.closest('.tl-tier');
+    if (tier) tier.classList.remove('drag-over');
+    else el.classList.remove('drag-over');
+    tlClearDropIndicators();
+    if (!tlDragSrc) return;
+    // Only handle drops directly on the container (not on a child item — those are handled above)
+    if (e.target.closest('.tl-item')) return;
+
+    tlRemoveItemFromAll(tlDragSrc.id);
+
+    const tierId = el.dataset.tierid || (tier && tier.dataset.tierid);
+    if (tierId) {
+      const t = tlTiers.find(t => t.id === tierId);
+      if (t) t.items.push({...tlDragSrc});
+    } else {
+      tlUnrankedItems.push({...tlDragSrc});
+    }
+    const droppedId = tlDragSrc.id;
+    tlDragSrc = null;
+    tlRender();
+    tlHighlightDropped(droppedId);
+  });
+}
+
+function tlRemoveItemFromAll(itemId) {
+  tlTiers.forEach(t => { t.items = t.items.filter(i => i.id !== itemId); });
+  tlUnrankedItems = tlUnrankedItems.filter(i => i.id !== itemId);
+}
+
+// ── Tier operations ─────────────────────────────────────────
+function tlRenameTier(id, val) {
+  const t = tlTiers.find(t=>t.id===id);
+  if (t) t.label = val.trim() || t.label;
+}
+
+function tlSetColor(id, colorKey) {
+  const t = tlTiers.find(t=>t.id===id);
+  if (t) { t.color = colorKey; tlRender(); }
+}
+
+function tlMoveTier(id, dir) {
+  const i = tlTiers.findIndex(t=>t.id===id);
+  const j = i + dir;
+  if (j < 0 || j >= tlTiers.length) return;
+  [tlTiers[i], tlTiers[j]] = [tlTiers[j], tlTiers[i]];
+  tlRender();
+}
+
+function tlDeleteTier(id) {
+  const t = tlTiers.find(t=>t.id===id);
+  if (t) tlUnrankedItems.push(...t.items);
+  tlTiers = tlTiers.filter(t=>t.id!==id);
+  tlRender();
+}
+
+function tlAddTier() {
+  tlTierCounter++;
+  tlTiers.push({ id:'tc'+tlTierCounter, label:'New Tier', color:'C', items:[] });
+  tlRender();
+  document.querySelector('.tl-main').scrollTo({top:99999, behavior:'smooth'});
+}
+
+function tlResetTiers() {
+  const allItems = [];
+  tlTiers.forEach(t => allItems.push(...t.items));
+  allItems.push(...tlUnrankedItems);
+  tlTiers = DEFAULT_TIERS.map(t => ({...t, items:[]}));
+  tlUnrankedItems = allItems;
+  tlRender();
+}
+
+function tlClearAll() {
+  tlTiers.forEach(t => t.items = []);
+  tlUnrankedItems = [];
+  tlRender();
+  // Draw attention to the search bar
+  requestAnimationFrame(() => {
+    const input = document.getElementById('kcsPoolInput');
+    if (!input) return;
+    input.focus();
+    input.classList.remove('pulsing');
+    void input.offsetWidth;
+    input.classList.add('pulsing');
+    input.addEventListener('animationend', () => input.classList.remove('pulsing'), { once: true });
+    input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+}
+
+// ── Pool Search ─────────────────────────────────────────────
+function tlPoolSearchInit() {
+  kcsInit('pool');
+}
+function tlPoolSearchClearFn() { kcsClearAll('pool'); }
+
+// ═══════════════════════════════════════════════════════════════
+// KCS — Keyword Chip Search Engine
+// Manages chip state + dropdown for 3 search bars independently:
+//   'champ'  → champion drum sidebar
+//   'relic'  → relic index grid
+//   'pool'   → tier list unranked pool
+// ═══════════════════════════════════════════════════════════════
+const kcsState = {
+  champ: { chips: [] },
+  relic: { chips: [] },
+  pool:  { chips: [] },
+};
+
+const KCS_CFG = {
+  champ: { inputId:'kcsChampInput', chipsId:'kcsChampChips', boxId:'kcsChampBox', ddId:'kcsChampDD', clearId:'kcsChampClear' },
+  relic: { inputId:'kcsRelicInput', chipsId:'kcsRelicChips', boxId:'kcsRelicBox', ddId:'kcsRelicDD', clearId:'kcsRelicClear' },
+  pool:  { inputId:'kcsPoolInput',  chipsId:'kcsPoolChips',  boxId:'kcsPoolBox',  ddId:'kcsPoolDD',  clearId:'kcsPoolClear'  },
+};
+
+function kcsInit(ns) {
+  const cfg   = KCS_CFG[ns];
+  const input = document.getElementById(cfg.inputId);
+  const dd    = document.getElementById(cfg.ddId);
+  if (!input) return;
+
+  input.addEventListener('input', () => { kcsRenderDropdown(ns); kcsApply(ns); });
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Backspace' && input.value === '') {
+      // Remove last chip on backspace with empty input
+      const chips = kcsState[ns].chips;
+      if (chips.length) { chips.pop(); kcsRenderChips(ns); kcsApply(ns); }
+    }
+    if (e.key === 'Escape') { dd.classList.remove('open'); }
+  });
+
+  document.addEventListener('mousedown', e => {
+    const box = document.getElementById(cfg.boxId);
+    if (!box?.contains(e.target) && !dd?.contains(e.target)) dd.classList.remove('open');
+  });
+}
+
+// Build dropdown items: keywords first, then relics, then champions
+function kcsRenderDropdown(ns) {
+  const cfg   = KCS_CFG[ns];
+  const input = document.getElementById(cfg.inputId);
+  const dd    = document.getElementById(cfg.ddId);
+  const box   = document.getElementById(cfg.boxId);
+  if (!input || !dd) return;
+
+  const q = input.value.trim().toLowerCase();
+  if (!q) { dd.classList.remove('open'); return; }
+
+  const existingValues = new Set(kcsState[ns].chips.map(c => c.value));
+  const TIER_COLORS = { epic:'var(--epic)', rare:'var(--rare)', common:'var(--common)', consumable:'var(--consumable)' };
+
+  const sections = [];
+
+  // ── Keywords (gold) ──
+  const kwHits = Object.keys(KEYWORD_DB)
+    .filter(k => !KW_SEARCH_EXCLUDED.has(k) && k.toLowerCase().includes(q));
+  if (kwHits.length) {
+    // Active (not already picked) float to top
+    kwHits.sort((a, b) => {
+      const aUsed = existingValues.has(a) ? 1 : 0;
+      const bUsed = existingValues.has(b) ? 1 : 0;
+      return aUsed - bUsed;
+    });
+    sections.push(`<div class="kcs-section-label">⭐ Keywords</div>`);
+    sections.push(...kwHits.slice(0,8).map(k => {
+      const already = existingValues.has(k) ? ' already' : '';
+      return `<div class="kcs-item${already}" onmousedown="event.preventDefault();kcsAddChip('${ns}',{kind:'kw',label:'${k.replace(/'/g,"\\'")}',value:'${k.replace(/'/g,"\\'")}'})" >
+        <span class="kcs-item-icon" style="color:var(--gold)">⭐</span>
+        <span class="kcs-item-label">${k}</span>
+        <span class="kcs-item-sub" style="color:var(--gold-dim)">keyword</span>
+      </div>`;
+    }));
+  }
+
+  // ── Mechanics (blue) ──
+  const mecHits = MECHANIC_TERMS.filter(t => t.toLowerCase().includes(q));
+  if (mecHits.length) {
+    mecHits.sort((a, b) => {
+      const aUsed = existingValues.has(a) ? 1 : 0;
+      const bUsed = existingValues.has(b) ? 1 : 0;
+      return aUsed - bUsed;
+    });
+    sections.push(`<div class="kcs-section-label">🔵 Mechanics</div>`);
+    sections.push(...mecHits.map(t => {
+      const already = existingValues.has(t) ? ' already' : '';
+      return `<div class="kcs-item${already}" onmousedown="event.preventDefault();kcsAddChip('${ns}',{kind:'mec',label:'${t.replace(/'/g,"\\'")}',value:'${t.replace(/'/g,"\\'")}'})" >
+        <span class="kcs-item-icon" style="color:#7ab8ff">🔵</span>
+        <span class="kcs-item-label">${t}</span>
+        <span class="kcs-item-sub" style="color:#4a9eff">mechanic</span>
+      </div>`;
+    }));
+  }
+
+  // For pool: pre-filter by any keyword chips already selected
+  const poolKwChips = ns === 'pool' ? kcsState.pool.chips.filter(c => c.kind === 'kw' || c.kind === 'mec') : [];
+
+  // ── Relics — shown in relic and pool namespaces only (not in drum sidebar) ──
+  if (ns !== 'champ') {
+  let relEntries = Object.entries(RELIC_DB)
+    .filter(([name, info]) => name.toLowerCase().includes(q) || descMatchesKeywordQuery(info.desc, q));
+  if (poolKwChips.length) {
+    relEntries = relEntries.filter(([, info]) => poolKwChips.every(chip => descMatchesKeywordQuery(info.desc, chip.value)));
+  }
+  // For relic index: also filter by already-selected chips so dropdown only shows compatible relics
+  if (ns === 'relic') {
+    const activeChips = kcsState.relic.chips;
+    relEntries = relEntries.filter(([name, info]) => {
+      for (const chip of activeChips) {
+        if (chip.kind === 'kw' || chip.kind === 'mec') {
+          if (!descMatchesKeywordQuery(info.desc, chip.value)) return false;
+        } else if (chip.kind === 'rel') {
+          if (name !== chip.value) return false;
+        }
+      }
+      return true;
+    });
+  }
+  // Sort: not-already-picked first; within that, relics that appear in builds beat those that don't
+  relEntries.sort(([nameA], [nameB]) => {
+    const aUsed = existingValues.has(nameA) ? 1 : 0;
+    const bUsed = existingValues.has(nameB) ? 1 : 0;
+    if (aUsed !== bUsed) return aUsed - bUsed;
+    // secondary: has any build with this relic?
+    const aHas = rawData.some(d => d.r1 === nameA || d.r2 === nameA || d.r3 === nameA) ? 0 : 1;
+    const bHas = rawData.some(d => d.r1 === nameB || d.r2 === nameB || d.r3 === nameB) ? 0 : 1;
+    return aHas - bHas;
+  });
+  const relHits = relEntries.slice(0, 8);
+  if (relHits.length) {
+    sections.push(`<div class="kcs-section-label">💎 Relics</div>`);
+    sections.push(...relHits.map(([name, info]) => {
+      const tc = TIER_COLORS[info.tier] || TIER_COLORS.common;
+      const already = existingValues.has(name) ? ' already' : '';
+      const img = info.icon
+        ? `<img class="kcs-item-img" src="${info.icon}" onerror="this.style.display='none'">`
+        : `<span class="kcs-item-icon">💎</span>`;
+      const safeName = name.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+      return `<div class="kcs-item${already}" onmousedown="event.preventDefault();kcsAddChip('${ns}',{kind:'rel',label:'${safeName}',value:'${safeName}'})" >
+        ${img}
+        <span class="kcs-item-label">${name}</span>
+        <span class="kcs-item-sub" style="color:${tc}">${info.tier}</span>
+      </div>`;
+    }));
+  }
+  }
+
+  // ── Champions (champ + pool only) ──
+  if (ns === 'champ' || ns === 'pool') {
+    let champCandidates = [...new Set(rawData.map(d => d.champion))]
+      .filter(c => c.toLowerCase().includes(q));
+    if (poolKwChips.length) {
+      champCandidates = champCandidates.filter(c => poolKwChips.every(chip => descMatchesKeywordQuery(champRelicDescs(c), chip.value)));
+    }
+    // Active (not already picked) float to top
+    champCandidates.sort((a, b) => {
+      const aUsed = existingValues.has(a) ? 1 : 0;
+      const bUsed = existingValues.has(b) ? 1 : 0;
+      return aUsed - bUsed;
+    });
+    const champHits = champCandidates.slice(0, 6);
+    if (champHits.length) {
+      sections.push(`<div class="kcs-section-label">⚔️ Champions</div>`);
+      sections.push(...champHits.map(c => {
+        const already = existingValues.has(c) ? ' already' : '';
+        const src = champImg(c);
+        const img = src
+          ? `<img class="kcs-item-img" src="${src}" onerror="this.style.display='none'" style="border-radius:50%">`
+          : `<span class="kcs-item-icon">⚔️</span>`;
+        const safeC = c.replace(/'/g,"\\'");
+        return `<div class="kcs-item${already}" onmousedown="event.preventDefault();kcsAddChip('${ns}',{kind:'champ',label:'${safeC}',value:'${safeC}'})" >
+          ${img}
+          <span class="kcs-item-label">${c}</span>
+          <span class="kcs-item-sub" style="color:var(--common)">champion</span>
+        </div>`;
+      }));
+    }
+  }
+
+  if (!sections.length) {
+    dd.innerHTML = `<div class="kcs-item" style="color:var(--text-dim);pointer-events:none">No results</div>`;
+  } else {
+    dd.innerHTML = sections.join('');
+  }
+
+  // Position below the box
+  const boxEl = document.getElementById(cfg.boxId);
+  const rect  = boxEl.getBoundingClientRect();
+  // Pool search opens upward
+  if (ns === 'pool') {
+    dd.style.bottom = (window.innerHeight - rect.top + 4) + 'px';
+    dd.style.top    = 'auto';
+  } else {
+    dd.style.top    = (rect.bottom + 4) + 'px';
+    dd.style.bottom = 'auto';
+  }
+  dd.style.left  = rect.left + 'px';
+  dd.style.width = Math.max(260, rect.width) + 'px';
+  dd.classList.add('open');
+}
+
+function kcsAddChip(ns, chip) {
+  const cfg   = KCS_CFG[ns];
+  const input = document.getElementById(cfg.inputId);
+  const dd    = document.getElementById(cfg.ddId);
+
+  // Don't add duplicate chips
+  if (kcsState[ns].chips.find(c => c.value === chip.value)) return;
+
+  // For pool: if it's a relic or champ, add it directly to pool instead of as a chip
+  if (ns === 'pool' && (chip.kind === 'rel' || chip.kind === 'champ')) {
+    if (chip.kind === 'rel') {
+      const info = RELIC_DB[chip.value] || {};
+      const item = { type:'relic', id:'relic::'+chip.value, name:chip.value, icon:info.icon, tier:info.tier, desc:info.desc };
+      if (!tlUnrankedItems.find(i => i.id === item.id) && !tlTiers.some(t => t.items.find(i => i.id === item.id))) {
+        tlUnrankedItems.push(item);
+        tlRender();
+        tlHighlightDropped(item.id);
+      }
+    } else {
+      const champItem = tlGetChampItems().find(c => c.name === chip.value);
+      if (champItem && !tlUnrankedItems.find(i => i.id === champItem.id) && !tlTiers.some(t => t.items.find(i => i.id === champItem.id))) {
+        tlUnrankedItems.push({...champItem});
+        tlRender();
+        tlHighlightDropped(champItem.id);
+      }
+    }
+    if (input) { input.value = ''; input.focus(); }
+    dd?.classList.remove('open');
+    kcsUpdateBox(ns);
+    return;
+  }
+
+  kcsState[ns].chips.push(chip);
+  if (input) { input.value = ''; input.focus(); }
+  dd?.classList.remove('open');
+  kcsRenderChips(ns);
+  kcsApply(ns);
+}
+
+function kcsRemoveChip(ns, value) {
+  kcsState[ns].chips = kcsState[ns].chips.filter(c => c.value !== value);
+  kcsRenderChips(ns);
+  kcsApply(ns);
+}
+
+function kcsRenderChips(ns) {
+  const cfg      = KCS_CFG[ns];
+  const chipsEl  = document.getElementById(cfg.chipsId);
+  if (!chipsEl) return;
+
+  chipsEl.innerHTML = kcsState[ns].chips.map(chip =>
+    `<span class="kcs-chip ${chip.kind}" title="${chip.label}">
+      ${chip.label}
+      <span class="kcs-chip-x" onmousedown="event.preventDefault();kcsRemoveChip('${ns}','${chip.value.replace(/'/g,"\\'")}')">✕</span>
+    </span>`
+  ).join('');
+
+  kcsUpdateBox(ns);
+}
+
+function kcsUpdateBox(ns) {
+  const cfg      = KCS_CFG[ns];
+  const box      = document.getElementById(cfg.boxId);
+  const input    = document.getElementById(cfg.inputId);
+  const clearBtn = document.getElementById(cfg.clearId);
+  const hasContent = kcsState[ns].chips.length > 0 || (input?.value.trim().length > 0);
+  box?.classList.toggle('has-content', hasContent);
+  if (clearBtn) clearBtn.style.display = hasContent ? 'block' : 'none';
+}
+
+function kcsClearAll(ns) {
+  const cfg   = KCS_CFG[ns];
+  const input = document.getElementById(cfg.inputId);
+  const dd    = document.getElementById(cfg.ddId);
+  kcsState[ns].chips = [];
+  if (input) input.value = '';
+  dd?.classList.remove('open');
+  kcsRenderChips(ns);
+  kcsApply(ns);
+  input?.focus();
+}
+
+// Apply current KCS state to the relevant view
+function kcsApply(ns) {
+  kcsUpdateBox(ns);
+  if (ns === 'champ') {
+    const prev = filtered[currentIdx];
+    recomputeFiltered();
+    if (filtered.length === 0) { fillRows(); return; }
+    const ni = filtered.indexOf(prev);
+    currentIdx = ni >= 0 ? ni : 0;
+    reposition(false);
+    fillRows();
+    if (filtered[currentIdx]) renderDetail(filtered[currentIdx]);
+  } else if (ns === 'relic') {
+    riRender();
+  } else if (ns === 'pool') {
+    const cfg   = KCS_CFG[ns];
+    const input = document.getElementById(cfg.inputId);
+    const q = input?.value.trim();
+    if (q || kcsState.pool.chips.length) kcsRenderDropdown('pool');
+  }
+}
+
+
+function tlAutoFill() {
+  tlFillFromPreset();
+  tlRender();
+}
+
+// ── Show / filter toggles ───────────────────────────────────
+function tlToggleShow(mode) {
+  tlShowMode = mode;
+  ['relics','champs'].forEach(m => {
+    document.getElementById('tlShow' + m.charAt(0).toUpperCase() + m.slice(1))
+      ?.classList.toggle('active', m === mode);
+  });
+  // Show relic-tier filters only when relics are visible
+  const showRelicFilters = (mode !== 'champs');
+  ['tlRelicTierLabel','tlRelicTierGroup'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = showRelicFilters ? '' : 'none';
+  });
+  tlFillFromPreset();
+  tlRender();
+}
+
+function tlToggleFilter(tier) {
+  tlFilters[tier] = !tlFilters[tier];
+  document.getElementById('tlFilter' + tier.charAt(0).toUpperCase() + tier.slice(1))
+    ?.classList.toggle('active', tlFilters[tier]);
+  tlFillFromPreset();
+  tlRender();
+}
+
+// ── Export ──────────────────────────────────────────────────
+// Init KCS for champion drum and relic index on page load
+document.addEventListener('DOMContentLoaded', () => {
+  kcsInit('champ');
+  kcsInit('relic');
+  // pool is inited by tlPoolSearchInit() when tier list tab opens
+});
+function tlExportImage() {
+  const title = document.getElementById('tlTitleInput')?.value || 'My Tier List';
+  const tiersHTML = document.getElementById('tlTiers')?.outerHTML || '';
+  const titleHTML = '<h1 style=\"font-family:serif;color:#c89b3c;text-align:center;margin-bottom:16px;font-size:28px;\">' + title + '</h1>';
+  const win = window.open('', '_blank');
+  if (!win) { alert('Please allow pop-ups to save as image.'); return; }
+  win.document.write('<!DOCTYPE html><html><head><title>' + title + '</title><style>body{background:#07090f;color:#d4c9b0;font-family:sans-serif;padding:20px;}.tl-tier{display:flex;align-items:stretch;border:1px solid #3a2e10;border-radius:8px;margin-bottom:8px;overflow:hidden;}.tl-tier-label-wrap{width:110px;min-width:110px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;padding:8px;}.tl-color-row,.tl-tier-ctrl,textarea{display:none!important;}.tl-tier-items{display:flex;flex-wrap:wrap;gap:6px;padding:8px;flex:1;align-items:center;}.tl-item{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.07);border-radius:6px;padding:4px 8px;font-size:13px;}.tl-item-img-relic{width:32px;height:32px;object-fit:contain;}.tl-item-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact;}}</style></head><body>' + titleHTML + tiersHTML + '<scr' + 'ipt>window.onload=function(){window.print();}<\/scr' + 'ipt></body></html>');
+  win.document.close();
+}
+
+</script>
+</body>
+</html>
