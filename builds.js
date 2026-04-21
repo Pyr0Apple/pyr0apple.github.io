@@ -1,7 +1,7 @@
 const rawData = [
   // ── Aatrox ──
   {champion:"Aatrox",r1:"The Darkin Blade",r2:"Starforged Gauntlets",r3:"The Beast Within",star:"6*-34",player:"Nazoric, TwoStickmen"},
-  {champion:"Aatrox",r1:"The Darkin Blade",r2:"Starforged Gauntlets",r3:"Echoing Spirit",star:"6*-50",player:"Bushi"},
+  {champion:"Aatrox",r1:"The Darkin Blade",r2:"Starforged Gauntlets",r3:"Echoing Spirit",star:"6*-50",player:"Bushi, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Aatrox",r1:"The Darkin Blade",r2:"Starforged Gauntlets",r3:"Crownguard Inheritance",star:"6*-50",player:"LehmonNation"},
   {champion:"Aatrox",r1:"Starforged Gauntlets",r2:"Luminous Orb",r3:"The Beast Within",star:"6*-49",player:"RoloRolla, The Moral Support"},
   {champion:"Aatrox",r1:"Disciple of Shadows",r2:"Succubus's Brand",r3:"The Beast Within",star:"6*-37",player:"Hooded, PetiB"},
@@ -20,6 +20,7 @@ const rawData = [
   {champion:"Ahri",r1:"Packed Powder",r2:"Found Fortune",r3:"Searing Brilliance",star:"6*-41",player:"Nazoric"},
   {champion:"Ahri",r1:"Packed Powder",r2:"Hidden Tome",r3:"Hymn of Valor",star:"6*-50",player:"u/Airtnp"},
   // ── Akshan ──
+  {champion:"Akshan",r1:"Perfect Hex Core",r2:"Echoing Spirit",r3:"Chosen by the Stars",star:"4*-34",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Akshan",r1:"Echoing Spirit",r2:"Perfect Hex Core",r3:"Voidborne Carapace",star:"4*-38",player:"msh"},
   {champion:"Akshan",r1:"Echoing Spirit",r2:"Searing Brilliance",r3:"Voidborne Carapace",star:"4*-37",player:"aoeuid"},
   {champion:"Akshan",r1:"Echoing Spirit",r2:"Scoundrel Hunter",r3:"Chemtech Duplicator",star:"6*-38",player:"Tangolino, Bushi, ProfSE"},
@@ -37,15 +38,15 @@ const rawData = [
   {champion:"Ambessa",r1:"Starforged Gauntlets",r2:"The Beast Within",r3:"Found Fortune",star:"6*-50",player:"Hooded"},
   {champion:"Ambessa",r1:"Perfect Hex Core",r2:"Black Shield",r3:"Found Fortune",star:"6*-50",player:"Magnum Flare"},
   {champion:"Ambessa",r1:"Living Weapon",r2:"Condenser",r3:"Stalker's Blade",star:"6*-33",player:"The Moral Support"},
-  {champion:"Ambessa",r1:"Guardian Angel",r2:"Stalker's Blade",r3:"Stalker's Blade",star:"5*-41",player:"diaversai"},
+  {champion:"Ambessa",r1:"Guardian Angel",r2:"Stalker's Blade",r3:"Stalker's Blade",star:"5*-41",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   // ── Anivia ──
   {champion:"Anivia",r1:"Guardian Angel",r2:"Guardian Angel",r3:"Chemtech Duplicator",star:"4*-39",player:"HPDARK, TwoStickmen, Chengsta"},
   {champion:"Anivia",r1:"Starforged Gauntlets",r2:"Luminous Orb",r3:"Chemtech Duplicator",star:"6*-37",player:"Nazoric"},
   {champion:"Anivia",r1:"Guardian's Orb",r2:"Guardian Angel",r3:"Chemtech Duplicator",star:"6*-48",player:"SweeKayz"},
-  {champion:"Anivia",r1:"Voidborne Carapace",r2:"Guardian Angel",r3:"Chemtech Duplicator",star:"6*-50",player:"aoeuid, Bushi, K0zt"},
+  {champion:"Anivia",r1:"Voidborne Carapace",r2:"Guardian Angel",r3:"Chemtech Duplicator",star:"6*-50",player:"aoeuid, Bushi, K0zt, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Anivia",r1:"The Beast Within",r2:"Icon of Valhir",r3:"Chemtech Duplicator",star:"6*-36",player:"Nuimee"},
   // ── Annie ──
-  {champion:"Annie",r1:"Dreadway Chase Gun",r2:"Guardian Angel",r3:"Ravenous Hydra",star:"3*-33",player:"Huffy"},
+  {champion:"Annie",r1:"Dreadway Chase Gun",r2:"Guardian Angel",r3:"Ravenous Hydra",star:"3*-33",player:"Huffy, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Annie",r1:"Dreadway Chase Gun",r2:"Guardian Angel",r3:"Z-Drive Prototype",star:"5*",player:"u/Odd_Dragonfruit_2100"},
   {champion:"Annie",r1:"Echoing Spirit",r2:"Twin Drakehounds",r3:"Galeforce",star:"6*-35",player:"Nazoric"},
   {champion:"Annie",r1:"Big Guns",r2:"Essence Theft",r3:"Whisper",star:"6*-48",player:"LehmonNation"},
@@ -58,7 +59,7 @@ const rawData = [
   // ── Aurelion Sol ──
   {champion:"Aurelion Sol",r1:"Siren's Call",r2:"The Deceiver's Crest",r3:"Z-Drive Prototype",star:"2*",player:"u/Odd_Dragonfruit_2100"},
   {champion:"Aurelion Sol",r1:"Loaded Dice",r2:"The Deceiver's Crest",r3:"Stalker's Blade",star:"3*-33",player:"darkk100"},
-  {champion:"Aurelion Sol",r1:"The Deceiver's Crest",r2:"Tempest Blade",r3:"Crownguard Inheritance",star:"3*-40",player:"diaversai"},
+  {champion:"Aurelion Sol",r1:"The Deceiver's Crest",r2:"Tempest Blade",r3:"Crownguard Inheritance",star:"3*-40",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Aurelion Sol",r1:"Perfect Hex Core",r2:"The Grand General's Counterplan",r3:"Crownguard Inheritance",star:"3*-50",player:"u/Airtnp"},
   {champion:"Aurelion Sol",r1:"Perfect Hex Core",r2:"Starforged Gauntlets",r3:"Crownguard Inheritance",star:"4*-34",player:"2ndTony"},
   {champion:"Aurelion Sol",r1:"Perfect Hex Core",r2:"Starforged Gauntlets",r3:"Searing Brilliance",star:"3*-38",player:"Hooded"},
@@ -95,7 +96,7 @@ const rawData = [
   // ── Darius ──
   {champion:"Darius",r1:"Starforged Gauntlets",r2:"The Hand of Noxus",r3:"Stacked Deck",star:"6*-35",player:"u/dt_again"},
   {champion:"Darius",r1:"Starforged Gauntlets",r2:"The Hand of Noxus",r3:"Corrupted Star Fragment",star:"6*-41",player:"Nazoric"},
-  {champion:"Darius",r1:"Starforged Gauntlets",r2:"Spectral Scissors",r3:"Loaded Dice",star:"5*-33",player:"Mike Hamster"},
+  {champion:"Darius",r1:"Starforged Gauntlets",r2:"Spectral Scissors",r3:"Loaded Dice",star:"5*-33",player:"Mike Hamster, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Darius",r1:"Chosen by the Stars",r2:"Disciple of Shadows",r3:"Lux's Incandescent Baton",star:"6*-40",player:"HPDARK"},
   {champion:"Darius",r1:"Loaded Dice",r2:"Z-Drive Prototype",r3:"Z-Drive Prototype",star:"6*-50",player:"Hooded, ProfSE, baseball7000"},
   {champion:"Darius",r1:"Loaded Dice",r2:"Black Shield",r3:"Z-Drive Prototype",star:"6*-50",player:"cyclonus101"},
@@ -103,7 +104,7 @@ const rawData = [
   {champion:"Diana",r1:"Chosen by the Stars",r2:"Echoing Spirit",r3:"Searing Brilliance",star:"3*-36",player:"Nazoric"},
   // ── Ekko ──
   {champion:"Ekko",r1:"Echoing Spirit",r2:"Chosen by the Stars",r3:"Searing Brilliance",star:"4*-34",player:"aoeuid, ProfSE, Nazoric"},
-  {champion:"Ekko",r1:"Echoing Spirit",r2:"Chosen by the Stars",r3:"Hidden Tome",star:"6*-35",player:"HPDARK"},
+  {champion:"Ekko",r1:"Echoing Spirit",r2:"Chosen by the Stars",r3:"Hidden Tome",star:"6*-35",player:"HPDARK, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Ekko",r1:"Echoing Spirit",r2:"Death's Foil",r3:"Found Fortune",star:"6*-50",player:"u/legner_01"},
   {champion:"Ekko",r1:"Echoing Spirit",r2:"Guardian's Orb",r3:"Guardian's Orb",star:"5*-44",player:"u/Miro_miro23, Kit Cat"},
   {champion:"Ekko",r1:"Echoing Spirit",r2:"Harmless Scarecrow",r3:"Makeshift Mayhem",star:"4*-33",player:"VodopadUmraza"},
@@ -140,6 +141,7 @@ const rawData = [
   {champion:"Elise",r1:"Queen's Embrace",r2:"Echoing Spirit",r3:"Galeforce",star:"6*-50",player:"The Doomba"},
   {champion:"Elise",r1:"Queen's Embrace",r2:"Full Build",r3:"Galeforce",star:"6*-50",player:"u/Airtnp, u/Met2003"},
   // ── Evelynn ──
+  {champion:"Evelynn",r1:"Siren's Call",r2:"Tempest Blade",r3:"Crownguard Inheritance",star:"5*-34",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Evelynn",r1:"Swain's Raven Army",r2:"Packed Powder",r3:"Found Fortune",star:"5*-35",player:"Nazoric"},
   {champion:"Evelynn",r1:"Swain's Raven Army",r2:"Packed Powder",r3:"Echoing Spirit",star:"3*-35",player:"VodopadUmraza"},
   {champion:"Evelynn",r1:"Echoing Spirit",r2:"Succubus's Brand",r3:"Tempest Blade",star:"6*-49",player:"ProfSE"},
@@ -161,7 +163,7 @@ const rawData = [
   // ── Garen ──
   {champion:"Garen",r1:"Black Shield",r2:"The Grand General's Counterplan",r3:"Voidborne Carapace",star:"3*-43",player:"Suurkyy"},
   // ── Gwen ──
-  {champion:"Gwen",r1:"Disciple of Shadows",r2:"Guardian Angel",r3:"Voidborne Carapace",star:"6*-45",player:"u/mrshmllwzz"},
+  {champion:"Gwen",r1:"Disciple of Shadows",r2:"Guardian Angel",r3:"Voidborne Carapace",star:"6*-45",player:"u/mrshmllwzz, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Gwen",r1:"Disciple of Shadows",r2:"Black Shield",r3:"Voidborne Carapace",star:"6*-35",player:"Catamarano"},
   {champion:"Gwen",r1:"Disciple of Shadows",r2:"Death's Foil",r3:"Black Shield",star:"6*-47",player:"lolguy999"},
   {champion:"Gwen",r1:"Disciple of Shadows",r2:"Death's Foil",r3:"Draconic Runes",star:"6*-41",player:"Nazoric"},
@@ -170,6 +172,7 @@ const rawData = [
   {champion:"Gwen",r1:"Disciple of Shadows",r2:"Found Fortune",r3:"Corrupted Star Fragment",star:"6*-50",player:"cyclonus101, ProfSE"},
   {champion:"Gwen",r1:"Galeforce",r2:"Wicked Harvest",r3:"Luden's Tempest",star:"6*-50",player:"vv"},
   // ── Heimerdinger ──
+  {champion:"Heimerdinger",r1:"The Beast Within",r2:"Packed Powder",r3:"Swain's Raven Army",star:"5*-47",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Heimerdinger",r1:"Defense Spending",r2:"Packed Powder",r3:"Swain's Raven Army",star:"6*-50",player:"NarvalDream, Nazoric"},
   {champion:"Heimerdinger",r1:"Defense Spending",r2:"Disciple of Shadows",r3:"Chemtech Duplicator",star:"6*-49",player:"u/Dangerous_Switch_716"},
   {champion:"Heimerdinger",r1:"The Beast Within",r2:"Disciple of Shadows",r3:"Jayce's Hextech Battery",star:"6*-39",player:"TwoStickmen"},
@@ -192,7 +195,7 @@ const rawData = [
   {champion:"Jhin",r1:"The Curator's Gatebreaker",r2:"Riptide Battery",r3:"Whisper",star:"6*-50",player:"u/Airtnp, TwoStickmen"},
   {champion:"Jhin",r1:"The Curator's Gatebreaker",r2:"Riptide Battery",r3:"Big Guns",star:"6*-42",player:"Chengsta"},
   {champion:"Jhin",r1:"Riptide Battery",r2:"Riptide Battery",r3:"Cease and Desist",star:"6*-35",player:"HPDARK"},
-  {champion:"Jhin",r1:"The Curator's Gatebreaker",r2:"Riptide Battery",r3:"Riptide Battery",star:"3*-37",player:"VodopadUmraza"},
+  {champion:"Jhin",r1:"The Curator's Gatebreaker",r2:"Riptide Battery",r3:"Riptide Battery",star:"3*-37",player:"VodopadUmraza, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Jhin",r1:"Deck of Destiny",r2:"Riptide Battery",r3:"Riptide Battery",star:"6*-40",player:"jewl"},
   {champion:"Jhin",r1:"Deck of Destiny",r2:"Riptide Battery",r3:"Big Guns",star:"6*-50",player:"u/legner_01, Nazoric"},
   {champion:"Jhin",r1:"Deck of Destiny",r2:"Riptide Battery",r3:"Cease and Desist",star:"6*-50",player:"LehmonNation, PetiB, ProfSE"},
@@ -218,7 +221,7 @@ const rawData = [
   {champion:"Kai'Sa",r1:"Perfect Hex Core",r2:"Black Shield",r3:"Galeforce",star:"6*-34",player:"u/Cyphren"},
   {champion:"Kai'Sa",r1:"Perfect Hex Core",r2:"Luden's Tempest",r3:"Dreams Of Yordles",star:"6*-39",player:"xopuxir"},
   {champion:"Kai'Sa",r1:"Perfect Hex Core",r2:"Chosen by the Stars",r3:"Dreams Of Yordles",star:"6*-50",player:"LehmonNation"},
-  {champion:"Kai'Sa",r1:"Perfect Hex Core",r2:"Chosen by the Stars",r3:"Black Shield",star:"6*-38",player:"yuemoonn"},
+  {champion:"Kai'Sa",r1:"Perfect Hex Core",r2:"Chosen by the Stars",r3:"Black Shield",star:"6*-38",player:"yuemoonn, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Kai'Sa",r1:"Perfect Hex Core",r2:"Chosen by the Stars",r3:"Queen's Embrace",star:"6*-39",player:"Hooded, Nazoric"},
   {champion:"Kai'Sa",r1:"Perfect Hex Core",r2:"Full Build",r3:"Queen's Embrace",star:"6*-33",player:"u/TaskRabbit14"},
   {champion:"Kai'Sa",r1:"Perfect Hex Core",r2:"Full Build",r3:"Dreams Of Yordles",star:"6*-45",player:"RoloRolla, ProfSE"},
@@ -227,7 +230,7 @@ const rawData = [
   {champion:"Kayle",r1:"Spellweaver's Symphony",r2:"Cease and Desist",r3:"Secret Technique",star:"6*-36",player:"Nazoric"},
   {champion:"Kayle",r1:"Secret Technique",r2:"Loaded Dice",r3:"Z-Drive Prototype",star:"6*-50",player:"Hooded"},
   {champion:"Kayle",r1:"Starfire Spellblade",r2:"Loaded Dice",r3:"Found Fortune",star:"6*-50",player:"Bushi"},
-  {champion:"Kayle",r1:"Starfire Spellblade",r2:"Loaded Dice",r3:"Secret Technique",star:"6*-50",player:"cyclonus101, ProfSE"},
+  {champion:"Kayle",r1:"Starfire Spellblade",r2:"Loaded Dice",r3:"Secret Technique",star:"6*-50",player:"cyclonus101, ProfSE, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   // ── LeBlanc ──
   {champion:"LeBlanc",r1:"Stalker's Blade",r2:"Stalker's Blade",r3:"Stalker's Blade",star:"3*-43",player:"Lau"},
   // ── Leona ──
@@ -247,6 +250,7 @@ const rawData = [
   {champion:"Lillia",r1:"Hidden Tome",r2:"Guardian's Orb",r3:"Guardian's Orb",star:"6*-37",player:"Katisu"},
   {champion:"Lillia",r1:"Wicked Harvest",r2:"Stalker's Blade",r3:"Guardian Angel",star:"3*-34",player:"Huffy"},
   // ── Lux ──
+  {champion:"Lux",r1:"Lux's Incandescent Baton",r2:"Starforged Gauntlets",r3:"Chemtech Duplicator",star:"6*-40",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Lux",r1:"Frozen Tomb",r2:"Arcane Comet",r3:"Chemtech Duplicator",star:"6*-38",player:"lolguy999"},
   {champion:"Lux",r1:"Lux's Incandescent Baton",r2:"Arcane Comet",r3:"Chemtech Duplicator",star:"6*-50",player:"cyclonus101, u/Katisurinkai, Nazoric"},
   {champion:"Lux",r1:"Lux's Incandescent Baton",r2:"Hidden Tome",r3:"Chemtech Duplicator",star:"6*-50",player:"Tangolino, Huffy, TwoStickmen"},
@@ -290,7 +294,7 @@ const rawData = [
   {champion:"Morgana",r1:"Echoing Spirit",r2:"Searing Brilliance",r3:"The Grand General's Counterplan",star:"6*-50",player:"ProfSE"},
   {champion:"Morgana",r1:"Echoing Spirit",r2:"Loaded Dice",r3:"The Grand General's Counterplan",star:"5*-40",player:"jewl"},
   {champion:"Morgana",r1:"Archangel's Staff",r2:"Loaded Dice",r3:"The Grand General's Counterplan",star:"4*-38",player:"the yapper"},
-  {champion:"Morgana",r1:"Archangel's Staff",r2:"The Grand General's Counterplan",r3:"Wicked Harvest",star:"5*-33",player:"diaversai"},
+  {champion:"Morgana",r1:"Archangel's Staff",r2:"The Grand General's Counterplan",r3:"Wicked Harvest",star:"5*-33",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Morgana",r1:"Chosen by the Stars",r2:"The Grand General's Counterplan",r3:"Chemtech Duplicator",star:"4*-41",player:"Aizen"},
   {champion:"Morgana",r1:"Chosen by the Stars",r2:"Hymn of Valor",r3:"Chemtech Duplicator",star:"6*-36",player:"Erian"},
   {champion:"Morgana",r1:"Chosen by the Stars",r2:"Hidden Tome",r3:"Deck of Destiny",star:"6*-33",player:"TwoStickmen"},
@@ -316,11 +320,11 @@ const rawData = [
   {champion:"Neeko",r1:"Echoing Spirit",r2:"The Beast Within",r3:"Fear-Cleaving Axe",star:"6*-50",player:"cyclonus101, Catamarano, Hooded"},
   {champion:"Neeko",r1:"Echoing Spirit",r2:"Searing Brilliance",r3:"Guardian's Orb",star:"6*-50",player:"LehmonNation, ProfSE, diaversai"},
   // ── Norra ──
-  {champion:"Norra",r1:"Scales of Judgement",r2:"Echoing Spirit",r3:"Hidden Tome",star:"6*-50",player:"LehmonNation, Hooded, ProfSE"},
+  {champion:"Norra",r1:"Scales of Judgement",r2:"Echoing Spirit",r3:"Hidden Tome",star:"6*-50",player:"LehmonNation, Hooded, ProfSE, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Norra",r1:"Scales of Judgement",r2:"The Beast Within",r3:"Stacked Deck",star:"5*-50",player:"Nazoric"},
   {champion:"Norra",r1:"Norra's Portal Accelerator",r2:"The Beast Within",r3:"Stacked Deck",star:"5*-50",player:"cyclonus101"},
   // ── Nunu & Willump ──
-  {champion:"Nunu & Willump",r1:"Guardian's Orb",r2:"Guardian Angel",r3:"Voidborne Carapace",star:"5*-34",player:"HPDARK, LehmonNation"},
+  {champion:"Nunu & Willump",r1:"Guardian's Orb",r2:"Guardian Angel",r3:"Voidborne Carapace",star:"5*-34",player:"HPDARK, LehmonNation, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Nunu & Willump",r1:"Yeti Spotting Guide",r2:"Guardian Angel",r3:"Voidborne Carapace",star:"6*-35",player:"Mike Hamster"},
   {champion:"Nunu & Willump",r1:"Yeti Spotting Guide",r2:"Death's Foil",r3:"Lux's Incandescent Baton",star:"6*-45",player:"TwoStickmen"},
   {champion:"Nunu & Willump",r1:"Yeti Spotting Guide",r2:"Death's Foil",r3:"The Beast Within",star:"6*-46",player:"NarvalDream"},
@@ -346,7 +350,7 @@ const rawData = [
   {champion:"Samira",r1:"Searing Brilliance",r2:"Champion's Purse",r3:"Perfect Hex Core",star:"5*-38",player:"Nazoric, ProfSE"},
   {champion:"Samira",r1:"Searing Brilliance",r2:"Chosen by the Stars",r3:"Hidden Tome",star:"4*-33",player:"aoeuid"},
   {champion:"Samira",r1:"Found Fortune",r2:"Loaded Dice",r3:"The Card Master's Gambit",star:"6*-34",player:"Hooded"},
-  {champion:"Samira",r1:"Found Fortune",r2:"Echoing Spirit",r3:"Chosen by the Stars",star:"6*-50",player:"LehmonNation"},
+  {champion:"Samira",r1:"Found Fortune",r2:"Echoing Spirit",r3:"Chosen by the Stars",star:"6*-50",player:"LehmonNation, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   // ── Sett ──
   {champion:"Sett",r1:"Starforged Gauntlets",r2:"Luminous Orb",r3:"Chemtech Duplicator",star:"5*-35",player:"The Doomba, Hooded, Nazoric"},
   {champion:"Sett",r1:"The Beast Within",r2:"The Grand General's Counterplan",r3:"Chemtech Duplicator",star:"6*-35",player:"u/duelingdog"},
@@ -358,7 +362,7 @@ const rawData = [
   {champion:"Shyvana",r1:"Echoing Spirit",r2:"Celestial Staff",r3:"Chosen by the Stars",star:"5*-39",player:"Sliverz"},
   {champion:"Shyvana",r1:"Echoing Spirit",r2:"Celestial Staff",r3:"The Beast Within",star:"6*-37",player:"Nazoric"},
   {champion:"Shyvana",r1:"Echoing Spirit",r2:"Celestial Staff",r3:"Guardian's Orb",star:"6*-43",player:"Blinddesire"},
-  {champion:"Shyvana",r1:"Echoing Spirit",r2:"Celestial Staff",r3:"Voidborne Carapace",star:"6*-50",player:"Sydiem, ProfSE"},
+  {champion:"Shyvana",r1:"Echoing Spirit",r2:"Celestial Staff",r3:"Voidborne Carapace",star:"6*-50",player:"Sydiem, ProfSE, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Shyvana",r1:"Echoing Spirit",r2:"Loaded Dice",r3:"Voidborne Carapace",star:"4*-44",player:"HPDARK"},
   {champion:"Shyvana",r1:"Echoing Spirit",r2:"The Beast Within",r3:"Stalker's Blade",star:"6*-36",player:"u/Motigaismycity"},
   {champion:"Shyvana",r1:"Echoing Spirit",r2:"The Beast Within",r3:"Starfire Spellblade",star:"6*-39",player:"u/TaskRabbit14"},
@@ -369,6 +373,7 @@ const rawData = [
   {champion:"Shyvana",r1:"The Beast Within",r2:"Death's Foil",r3:"Stalker's Blade",star:"6*-44",player:"u/4002sacuL"},
   {champion:"Shyvana",r1:"Draconic Runes",r2:"Scales of Judgement",r3:"Stalker's Blade",star:"6*-50",player:"Mike Hamster"},
   // ── Soraka ──
+  {champion:"Soraka",r1:"Cruel Experiments",r2:"The Berserker's Buckle",r3:"Celestial Staff",star:"6*-35",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Soraka",r1:"Starforged Gauntlets",r2:"Strength of Stone",r3:"Arcane Comet",star:"6*-31",player:"Chengsta"},
   {champion:"Soraka",r1:"Starforged Gauntlets",r2:"Strength of Stone",r3:"Celestial Staff",star:"6*-35",player:"TwoStickmen"},
   {champion:"Soraka",r1:"Strength of Stone",r2:"Cruel Experiments",r3:"The Grand General's Counterplan",star:"6*-36",player:"Hooded"},
@@ -385,7 +390,7 @@ const rawData = [
   {champion:"Spirit Blossom Ahri",r1:"Strength of Stone",r2:"Attendant Spirits",r3:"Corrupted Star Fragment",star:"7*-50",player:"u/TaskRabbit14"},
   // ── Spirit Blossom Evelynn ──
   {champion:"Spirit Blossom Evelynn",r1:"Lux's Incandescent Baton",r2:"Loaded Dice",r3:"The Beast Within",star:"4*-38",player:"HPDARK"},
-  {champion:"Spirit Blossom Evelynn",r1:"Chosen by the Stars",r2:"Disciple of Shadows",r3:"Found Fortune",star:"4*-43",player:"diaversai"},
+  {champion:"Spirit Blossom Evelynn",r1:"Chosen by the Stars",r2:"Disciple of Shadows",r3:"Found Fortune",star:"4*-43",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Spirit Blossom Evelynn",r1:"Chosen by the Stars",r2:"Disciple of Shadows",r3:"Lux's Incandescent Baton",star:"4*-50",player:"ProfSE, Hooded"},
   {champion:"Spirit Blossom Evelynn",r1:"Strength of Stone",r2:"Frozen Tomb",r3:"Luminous Orb",star:"6*-50",player:"u/ToaOfTheVoid"},
   {champion:"Spirit Blossom Evelynn",r1:"Siphoned Sorrow",r2:"Strength of Stone",r3:"The Beast Within",star:"5*-50",player:"Nazoric"},
@@ -400,7 +405,7 @@ const rawData = [
   {champion:"Spirit Blossom Kindred",r1:"Echoing Spirit",r2:"The Grand General's Counterplan",r3:"The Grand General's Counterplan",star:"6*-50",player:"u/TaskRabbit14"},
   {champion:"Spirit Blossom Kindred",r1:"Echoing Spirit",r2:"The Beast Within",r3:"Loaded Dice",star:"6*-50",player:"HPDARK"},
   {champion:"Spirit Blossom Kindred",r1:"Echoing Spirit",r2:"The Beast Within",r3:"Living Weapon",star:"7*-50",player:"Chengsta"},
-  {champion:"Spirit Blossom Kindred",r1:"Echoing Spirit",r2:"The Beast Within",r3:"The Grand General's Counterplan",star:"7*",player:"ProfSE, Hooded, SSJ5GOKU"},
+  {champion:"Spirit Blossom Kindred",r1:"Echoing Spirit",r2:"The Beast Within",r3:"The Grand General's Counterplan",star:"7*",player:"ProfSE, Hooded, SSJ5GOKU, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Spirit Blossom Kindred",r1:"Echoing Spirit",r2:"Champion's Purse",r3:"The Grand General's Counterplan",star:"7*-50",player:"NarvalDream"},
   {champion:"Spirit Blossom Kindred",r1:"Swain's Raven Army",r2:"Packed Powder",r3:"The Grand General's Counterplan",star:"6*-50",player:"Nazoric"},
   // ── Spirit Blossom Master Yi ──
@@ -413,7 +418,7 @@ const rawData = [
   {champion:"Spirit Blossom Master Yi",r1:"Perfect Hex Core",r2:"Timehonored Blade",r3:"Loaded Dice",star:"6*-36",player:"Mike Hamster"},
   // ── Spirit Blossom Teemo ──
   {champion:"Spirit Blossom Teemo",r1:"Mischiefmaker's Flute",r2:"Harmless Scarecrow",r3:"Frozen Tomb",star:"4*-50",player:"Nazoric"},
-  {champion:"Spirit Blossom Teemo",r1:"Mischiefmaker's Flute",r2:"Harmless Scarecrow",r3:"Hextech Rifle",star:"7*-50",player:"u/kradsavage"},
+  {champion:"Spirit Blossom Teemo",r1:"Mischiefmaker's Flute",r2:"Harmless Scarecrow",r3:"Hextech Rifle",star:"7*-50",player:"u/kradsavage, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Spirit Blossom Teemo",r1:"Mischiefmaker's Flute",r2:"Harmless Scarecrow",r3:"Echoing Spirit",star:"6*-48",player:"RoloRolla"},
   {champion:"Spirit Blossom Teemo",r1:"Mischiefmaker's Flute",r2:"Harmless Scarecrow",r3:"The Bounty Hunter's Renown",star:"7*-50",player:"Tangolino"},
   {champion:"Spirit Blossom Teemo",r1:"Mischiefmaker's Flute",r2:"Harmless Scarecrow",r3:"Wicked Harvest",star:"7*-50",player:"u/dt_again, TwoStickmen"},
@@ -447,6 +452,7 @@ const rawData = [
   {champion:"Swain",r1:"Loaded Dice",r2:"Packed Powder",r3:"Searing Brilliance",star:"6*-43",player:"Alkaloid"},
   {champion:"Swain",r1:"Loaded Dice",r2:"Big Guns",r3:"Frozen Tomb",star:"6*-44",player:"HPDARK"},
   // ── Taliyah ──
+  {champion:"Taliyah",r1:"Chosen by the Stars",r2:"Disciple of Shadows",r3:"Lux's Incandescent Baton",star:"5*-44",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Taliyah",r1:"Whisper",r2:"Crownguard Inheritance",r3:"Tempest Blade",star:"6*-50",player:"LehmonNation"},
   {champion:"Taliyah",r1:"Icon of Valhir",r2:"Found Fortune",r3:"Laurent Bladerack",star:"6*-37",player:"Nazoric"},
   {champion:"Taliyah",r1:"Starforged Gauntlets",r2:"Luminous Orb",r3:"Laurent Bladerack",star:"6*-36",player:"Hooded"},
@@ -463,6 +469,7 @@ const rawData = [
   {champion:"The Poro King",r1:"Spirit of the Buhru",r2:"Royal Nibbles",r3:"The Beast Within",star:"6*-37",player:"u/TaskRabbit14"},
   {champion:"The Poro King",r1:"Spirit of the Buhru",r2:"Royal Nibbles",r3:"Chemtech Duplicator",star:"4*-47",player:"Zarkkast"},
   // ── Thresh ──
+  {champion:"Thresh",r1:"Soul Lantern",r2:"Whirling Blade",r3:"Star Gem",star:"5*-36",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Thresh",r1:"Found Fortune",r2:"Guardian's Orb",r3:"Essence Theft",star:"3*-38",player:"VodopadUmraza"},
   {champion:"Thresh",r1:"Found Fortune",r2:"Corrupted Star Fragment",r3:"Wicked Harvest",star:"6*-37",player:"u/DoubleSummon"},
   {champion:"Thresh",r1:"Echoing Spirit",r2:"Found Fortune",r3:"Guardian's Orb",star:"4*-42",player:"Alex"},
@@ -498,7 +505,7 @@ const rawData = [
   {champion:"Vayne",r1:"Death's Foil",r2:"The Beast Within",r3:"Lost Chapter",star:"6*-37",player:"yuemoonn"},
   {champion:"Vayne",r1:"Death's Foil",r2:"The Beast Within",r3:"Hidden Tome",star:"6*-41",player:"RoloRolla"},
   {champion:"Vayne",r1:"Death's Foil",r2:"The Beast Within",r3:"Deadly Harpoon",star:"6*-35",player:"Nazoric"},
-  {champion:"Vayne",r1:"Death's Foil",r2:"Hidden Tome",r3:"Chosen by the Stars",star:"6*-50",player:"LehmonNation, aoeuid, baseball7000"},
+  {champion:"Vayne",r1:"Death's Foil",r2:"Hidden Tome",r3:"Chosen by the Stars",star:"6*-50",player:"LehmonNation, aoeuid, baseball7000, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Vayne",r1:"Death's Foil",r2:"Lost Chapter",r3:"Chosen by the Stars",star:"6*-40",player:"tomyang1117"},
   {champion:"Vayne",r1:"Chosen by the Stars",r2:"Hidden Tome",r3:"Voidborne Carapace",star:"6*-44",player:"jewl"},
   {champion:"Vayne",r1:"Living Weapon",r2:"Hidden Tome",r3:"Voidborne Carapace",star:"6*-40",player:"u/freehugs33"},
@@ -517,7 +524,7 @@ const rawData = [
   {champion:"Vex",r1:"Guardian Angel",r2:"Voidborne Carapace",r3:"Utmost Despair",star:"6*-38",player:"CrabbyCharix"},
   {champion:"Vex",r1:"Guardian Angel",r2:"Voidborne Carapace",r3:"Wicked Harvest",star:"6*-50",player:"LehmonNation, u/Yorusluti, u/Met2003"},
   // ── Vi ──
-  {champion:"Vi",r1:"Strength of Stone",r2:"Searing Brilliance",r3:"Starforged Gauntlets",star:"3*-34",player:"aoeuid"},
+  {champion:"Vi",r1:"Strength of Stone",r2:"Searing Brilliance",r3:"Starforged Gauntlets",star:"3*-34",player:"aoeuid, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Vi",r1:"Deck of Destiny",r2:"Searing Brilliance",r3:"The Beast Within",star:"5*-34",player:"Nazoric"},
   {champion:"Vi",r1:"Cease and Desist",r2:"Searing Brilliance",r3:"Disciple of Shadows",star:"6*-50",player:"ProfSE"},
   {champion:"Vi",r1:"Cease and Desist",r2:"Death's Foil",r3:"The Curator's Gatebreaker",star:"6*-47",player:"NarvalDream"},
@@ -538,6 +545,7 @@ const rawData = [
   {champion:"Viego",r1:"Black Shield",r2:"Stacked Deck",r3:"Portal Pals",star:"6*-45",player:"Nazoric"},
   {champion:"Viego",r1:"Guardian Angel",r2:"Corrupted Star Fragment",r3:"Stalker's Blade",star:"6*-35",player:"Yatotoro"},
   // ── Viktor ──
+  {champion:"Viktor",r1:"Echoing Spirit",r2:"Lost Chapter",r3:"Hymn of Valor",star:"6*-40",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Viktor",r1:"Echoing Spirit",r2:"Perfect Hex Core",r3:"Hymn of Valor",star:"6*-39",player:"Catamarano, Magnum Flare"},
   {champion:"Viktor",r1:"Echoing Spirit",r2:"Perfect Hex Core",r3:"Chemtech Duplicator",star:"6*-50",player:"Nuimee"},
   {champion:"Viktor",r1:"Echoing Spirit",r2:"Perfect Hex Core",r3:"Oath of the Guardians",star:"6*-44",player:"Nazoric"},
@@ -549,7 +557,7 @@ const rawData = [
   {champion:"Viktor",r1:"Perfect Hex Core",r2:"Found Fortune",r3:"Chemtech Duplicator",star:"3*-34",player:"VodopadUmraza"},
   {champion:"Viktor",r1:"Perfect Hex Core",r2:"Hidden Tome",r3:"Hymn of Valor",star:"6*-50",player:"u/Airtnp, Mike Hamster"},
   // ── Volibear ──
-  {champion:"Volibear",r1:"Starforged Gauntlets",r2:"Portal Pals",r3:"Big Guns",star:"6*-41",player:"HPDARK"},
+  {champion:"Volibear",r1:"Starforged Gauntlets",r2:"Portal Pals",r3:"Big Guns",star:"6*-41",player:"HPDARK, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Volibear",r1:"Starforged Gauntlets",r2:"Portal Pals",r3:"Icon of Valhir",star:"6*-50",player:"NarvalDream"},
   {champion:"Volibear",r1:"Starforged Gauntlets",r2:"Portal Pals",r3:"Stacked Deck",star:"6*-37",player:"Hooded, ProfSE"},
   {champion:"Volibear",r1:"Starforged Gauntlets",r2:"Portal Pals",r3:"Loaded Dice",star:"6*-41",player:"HPDARK"},
@@ -611,7 +619,7 @@ const rawData = [
   {champion:"Elder Dragon",r1:"Starforged Gauntlets",r2:"Cease and Desist",r3:"Stalker's Blade",star:"6*-40",player:"BumpyRoad"},
   // ── Elise ──
   {champion:"Elise",r1:"Death's Foil",r2:"Galeforce",r3:"Dreams Of Yordles",star:"5*-38",player:"BumpyRoad"},
-  {champion:"Elise",r1:"Queen's Embrace",r2:"Found Fortune",r3:"Galeforce",star:"5*-40",player:"diaversai"},
+  {champion:"Elise",r1:"Queen's Embrace",r2:"Found Fortune",r3:"Galeforce",star:"5*-40",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   // ── Fiddlesticks ──
   {champion:"Fiddlesticks",r1:"Harmless Scarecrow",r2:"Shock & Awe",r3:"Chemtech Duplicator",star:"6*-44",player:"Katisu"},
   {champion:"Fiddlesticks",r1:"Echoing Spirit",r2:"Loaded Dice",r3:"Chemtech Duplicator",star:"6*-50",player:"HPDARK"},
@@ -643,7 +651,7 @@ const rawData = [
   {champion:"Morgana",r1:"Loaded Dice",r2:"Chemtech Duplicator",r3:"The Grand General's Counterplan",star:"4*-37",player:"kingarkal"},
   {champion:"Morgana",r1:"Packed Powder",r2:"Archangel's Staff",r3:"The Grand General's Counterplan",star:"6*-38",player:"BumpyRoad"},
   // ── Nasus ──
-  {champion:"Nasus",r1:"Disciple of Shadows",r2:"Wicked Harvest",r3:"Voidborne Carapace",star:"5*-33",player:"BlueBaelz"},
+  {champion:"Nasus",r1:"Disciple of Shadows",r2:"Wicked Harvest",r3:"Voidborne Carapace",star:"5*-33",player:"BlueBaelz, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Nasus",r1:"The Beast Within",r2:"Stalker's Blade",r3:"The Grand General's Counterplan",star:"6*-35",player:"The Moral Support"},
   // ── Nautilus ──
   {champion:"Nautilus",r1:"The Beast Within",r2:"Frozen Tomb",r3:"Fate's Hand",star:"6*-39",player:"BumpyRoad"},
@@ -672,7 +680,7 @@ const rawData = [
   // ── Spirit Blossom Kindred ──
   {champion:"Spirit Blossom Kindred",r1:"Disciple of Shadows",r2:"The Grand General's Counterplan",r3:"Wicked Harvest",star:"5*-50",player:"kingarkal"},
   // ── Spirit Blossom Master Yi ──
-  {champion:"Spirit Blossom Master Yi",r1:"Secret Technique",r2:"The Beast Within",r3:"Perfect Hex Core",star:"6*-43",player:"RoloRolla"},
+  {champion:"Spirit Blossom Master Yi",r1:"Secret Technique",r2:"The Beast Within",r3:"Perfect Hex Core",star:"6*-43",player:"RoloRolla, diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Spirit Blossom Master Yi",r1:"Perfect Hex Core",r2:"Disciple of Shadows",r3:"Tempest Blade",star:"5*-44",player:"kingarkal"},
   // ── Spirit Blossom Teemo ──
   {champion:"Spirit Blossom Teemo",r1:"Disciple of Shadows",r2:"Chosen by the Stars",r3:"Lux's Incandescent Baton",star:"4*-50",player:"ProfSE"},
@@ -684,7 +692,7 @@ const rawData = [
   // ── Teemo ──
   {champion:"Teemo",r1:"Whirling Blade",r2:"Mischiefmaker's Flute",r3:"Ravenous Hydra",star:"3*-34",player:"yramrax"},
   // ── Twisted Fate ──
-  {champion:"Twisted Fate",r1:"Echoing Spirit",r2:"The Beast Within",r3:"Luden's Tempest",star:"4*-35",player:"diaversai"},
+  {champion:"Twisted Fate",r1:"Echoing Spirit",r2:"The Beast Within",r3:"Luden's Tempest",star:"4*-35",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   // ── Udyr ──
   {champion:"Udyr",r1:"Starforged Gauntlets",r2:"Hidden Tome",r3:"Luminous Orb",star:"4*-33",player:"HPDARK"},
   // ── Vex ──
@@ -695,6 +703,7 @@ const rawData = [
   {champion:"Vi",r1:"Cease and Desist",r2:"Scales of Judgement",r3:"Starfire Spellblade",star:"5*-36",player:"glaxxie, Mike Hamster"},
   {champion:"Vi",r1:"Found Fortune",r2:"Death's Foil",r3:"The Curator's Gatebreaker",star:"6*-34",player:"The Moral Support"},
   // ── Warwick ──
+  {champion:"Warwick",r1:"Siren's Call",r2:"Wicked Harvest",r3:"Succubus's Brand",star:"6*-40",player:"diaversai",youtube:"https://www.youtube.com/@diaplaysgames"},
   {champion:"Warwick",r1:"The Beast Within",r2:"Loaded Dice",r3:"Ravenous Hydra",star:"6*-50",player:"pizcez13"},
   {champion:"Warwick",r1:"Cruel Experiments",r2:"Black Shield",r3:"Whirling Blade",star:"6*-42",player:"glaxxie"},
   {champion:"Warwick",r1:"Wicked Harvest",r2:"Hidden Tome",r3:"Harmless Scarecrow",star:"3*-40",player:"VodopadUmraza"},
