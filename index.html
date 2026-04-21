@@ -3157,6 +3157,12 @@ requestAnimationFrame(() => {
 
 
 
+// ── PLAYER LINKS ─────────────────────────────────────────────────────
+const PLAYER_LINKS = {
+  'Nazoric': 'https://www.youtube.com/@Cirozan',
+  'LehmonNation': 'https://www.youtube.com/@lehmonporo',
+};
+
 // ── PLAYER DRAWER ────────────────────────────────────────────────────
 
 function openPlayerDrawer(playerName) {
@@ -3164,7 +3170,11 @@ function openPlayerDrawer(playerName) {
     d.player.split(',').map(p => p.trim()).includes(playerName)
   );
 
-  document.getElementById('pdPlayerName').textContent = playerName;
+  const playerLink = PLAYER_LINKS[playerName];
+  const linkIcon = playerLink
+    ? ` <a href="${playerLink}" target="_blank" rel="noopener" title="Visit ${playerName}'s channel" onclick="event.stopPropagation()" style="display:inline-flex;align-items:center;vertical-align:middle;margin-left:8px;color:var(--text-dim);text-decoration:none;transition:color 0.15s;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='var(--text-dim)'"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a>`
+    : '';
+  document.getElementById('pdPlayerName').innerHTML = playerName + linkIcon;
   document.getElementById('pdBuildCount').textContent =
     builds.length + ' build' + (builds.length !== 1 ? 's' : '');
 
