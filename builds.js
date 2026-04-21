@@ -584,4 +584,121 @@ const rawData = [
   {champion:"Yuumi",r1:"Perfect Hex Core",r2:"Full Build",r3:"Galeforce",star:"5*-35",player:"Mike Hamster, aoeuid, cyclonus101"},
   {champion:"Yuumi",r1:"Perfect Hex Core",r2:"Black Shield",r3:"Loaded Dice",star:"6*-38",player:"Katisu"},
   {champion:"Yuumi",r1:"The Beast Within",r2:"Black Shield",r3:"Full Build",star:"6*-36",player:"The Moral Support"},
+  // ── NEW ENTRIES (cross-referenced from spreadsheet) ──
+  // ── Aatrox ──
+  {champion:"Aatrox",r1:"Sentinel's Plate",r2:"Black Shield",r3:"The Beast Within",star:"6*-39",player:"Magnum Flare"},
+  {champion:"Aatrox",r1:"Starforged Gauntlets",r2:"Luminous Orb",r3:"Loaded Dice",star:"5*-36",player:"BumpyRoad"},
+  {champion:"Aatrox",r1:"Echoing Spirit",r2:"Price of Retribution",r3:"Guardian Angel",star:"6*-50",player:"Bushi"},
+  // ── Ahri ──
+  {champion:"Ahri",r1:"Hidden Tome",r2:"The Curator's Gatebreaker",r3:"Hymn of Valor",star:"6*-40",player:"Katisu"},
+  // ── Akshan ──
+  {champion:"Akshan",r1:"Echoing Spirit",r2:"Chosen by the Stars",r3:"Secret Technique",star:"6*-35",player:"The Moral Support"},
+  // ── Ambessa ──
+  {champion:"Ambessa",r1:"Starforged Gauntlets",r2:"Death's Foil",r3:"Spectral Scissors",star:"6*-40",player:"TwoStickmen"},
+  // ── Anivia ──
+  {champion:"Anivia",r1:"Renewing Power",r2:"Guardian Angel",r3:"Chemtech Duplicator",star:"3*-37",player:"cleaner"},
+  // ── Annie ──
+  {champion:"Annie",r1:"Voidborne Carapace",r2:"Guardian Angel",r3:"Ravenous Hydra",star:"6*-34",player:"The Moral Support"},
+  {champion:"Annie",r1:"Searing Brilliance",r2:"Chemtech Duplicator",r3:"Wicked Harvest",star:"5*-37",player:"aoeuid"},
+  {champion:"Annie",r1:"Big Guns",r2:"Shock & Awe",r3:"Luden's Tempest",star:"6*-66",player:"TwoStickmen"},
+  // ── Ashe ──
+  {champion:"Ashe",r1:"Echoing Spirit",r2:"The Grand General's Counterplan",r3:"Voidborne Carapace",star:"6*-43",player:"Katisu"},
+  {champion:"Ashe",r1:"Echoing Spirit",r2:"Frozen Tomb",r3:"The Grand General's Counterplan",star:"5*-50",player:"yramrax"},
+  {champion:"Ashe",r1:"Cease and Desist",r2:"The Curator's Gatebreaker",r3:"The Curator's Gatebreaker",star:"6*-34",player:"TwoStickmen"},
+  // ── Azir ──
+  {champion:"Azir",r1:"Chosen by the Stars",r2:"Black Shield",r3:"Archangel's Staff",star:"4*-38",player:"lolguy999"},
+  // ── Elder Dragon ──
+  {champion:"Elder Dragon",r1:"Starforged Gauntlets",r2:"Cease and Desist",r3:"Stalker's Blade",star:"6*-40",player:"BumpyRoad"},
+  // ── Elise ──
+  {champion:"Elise",r1:"Death's Foil",r2:"Galeforce",r3:"Dreams Of Yordles",star:"5*-38",player:"BumpyRoad"},
+  {champion:"Elise",r1:"Queen's Embrace",r2:"Found Fortune",r3:"Galeforce",star:"5*-40",player:"diaversai"},
+  // ── Fiddlesticks ──
+  {champion:"Fiddlesticks",r1:"Harmless Scarecrow",r2:"Shock & Awe",r3:"Chemtech Duplicator",star:"6*-44",player:"Katisu"},
+  {champion:"Fiddlesticks",r1:"Echoing Spirit",r2:"Loaded Dice",r3:"Chemtech Duplicator",star:"6*-50",player:"HPDARK"},
+  {champion:"Fiddlesticks",r1:"Cruel Experiments",r2:"Defense Spending",r3:"Loaded Dice",star:"5*-41",player:"BumpyRoad"},
+  // ── Heimerdinger ──
+  {champion:"Heimerdinger",r1:"Swain's Raven Army",r2:"Packed Powder",r3:"Rythms of Despair",star:"6*-35",player:"Nazoric"},
+  // ── Jinx ──
+  {champion:"Jinx",r1:"Packed Powder",r2:"Loaded Dice",r3:"The Loose Cannon's Payload",star:"6*-44",player:"RoloRolla"},
+  {champion:"Jinx",r1:"Swain's Raven Army",r2:"Packed Powder",r3:"The Loose Cannon's Payload",star:"6*",player:"TwoStickmen"},
+  // ── Kai'Sa ──
+  {champion:"Kai'Sa",r1:"Chosen by the Stars",r2:"Full Build",r3:"Dreams Of Yordles",star:"5*-31",player:"Catamarano"},
+  {champion:"Kai'Sa",r1:"Chosen by the Stars",r2:"Black Shield",r3:"Galeforce",star:"6*-38",player:"Blinddesire"},
+  {champion:"Kai'Sa",r1:"Full Build",r2:"Queen's Embrace",r3:"Galeforce",star:"6*-50",player:"Chengsta"},
+  {champion:"Kai'Sa",r1:"Perfect Hex Core",r2:"Chosen by the Stars",r3:"Transmogulator",star:"6*-34",player:"TwoStickmen"},
+  {champion:"Kai'Sa",r1:"Perfect Hex Core",r2:"Chosen by the Stars",r3:"Big Guns",star:"6*-33",player:"Nuimee"},
+  {champion:"Kai'Sa",r1:"Perfect Hex Core",r2:"Full Build",r3:"Black Shield",star:"6*-37",player:"the yapper"},
+  // ── Leona ──
+  {champion:"Leona",r1:"Echoing Spirit",r2:"Found Fortune",r3:"The Grand General's Counterplan",star:"6*-33",player:"The Moral Support"},
+  // ── Lux ──
+  {champion:"Lux",r1:"Starforged Gauntlets",r2:"Luminous Orb",r3:"Arcane Comet",star:"6*-41",player:"Nazoric"},
+  // ── Lux: Illuminated ──
+  {champion:"Lux: Illuminated",r1:"Lux's Incandescent Baton",r2:"Fear-Cleaving Axe",r3:"Crownguard Inheritance",star:"6*-49",player:"ProfSE"},
+  // ── Mel ──
+  {champion:"Mel",r1:"Searing Brilliance",r2:"Perfect Hex Core",r3:"Death's Foil",star:"6*-40",player:"Nuimee"},
+  {champion:"Mel",r1:"Price of Retribution",r2:"Chemtech Duplicator",r3:"Voidborne Carapace",star:"6*-50",player:"Bushi"},
+  // ── Miss Fortune ──
+  {champion:"Miss Fortune",r1:"Echoing Spirit",r2:"Black Shield",r3:"The Grand General's Counterplan",star:"5*-37",player:"Catamarano"},
+  // ── Morgana ──
+  {champion:"Morgana",r1:"Loaded Dice",r2:"Chemtech Duplicator",r3:"The Grand General's Counterplan",star:"4*-37",player:"kingarkal"},
+  {champion:"Morgana",r1:"Packed Powder",r2:"Archangel's Staff",r3:"The Grand General's Counterplan",star:"6*-38",player:"BumpyRoad"},
+  // ── Nasus ──
+  {champion:"Nasus",r1:"Disciple of Shadows",r2:"Wicked Harvest",r3:"Voidborne Carapace",star:"5*-33",player:"BlueBaelz"},
+  {champion:"Nasus",r1:"The Beast Within",r2:"Stalker's Blade",r3:"The Grand General's Counterplan",star:"6*-35",player:"The Moral Support"},
+  // ── Nautilus ──
+  {champion:"Nautilus",r1:"The Beast Within",r2:"Frozen Tomb",r3:"Fate's Hand",star:"6*-39",player:"BumpyRoad"},
+  // ── Neeko ──
+  {champion:"Neeko",r1:"Echoing Spirit",r2:"The Beast Within",r3:"Guardian's Orb",star:"6*-35",player:"TwoStickmen"},
+  {champion:"Neeko",r1:"Fear-Cleaving Axe",r2:"The Beast Within",r3:"Defense Spending",star:"6*-36",player:"Magnum Flare"},
+  // ── Norra ──
+  {champion:"Norra",r1:"Scales of Judgement",r2:"The Beast Within",r3:"Hidden Tome",star:"6*-35",player:"TwoStickmen"},
+  {champion:"Norra",r1:"Echoing Spirit",r2:"Hidden Tome",r3:"Corrupted Star Fragment",star:"5*-36",player:"BumpyRoad"},
+  {champion:"Norra",r1:"Oath of the Guardians",r2:"Star Gem",r3:"Star Gem",star:"6*-35",player:"The Moral Support"},
+  // ── Pyke ──
+  {champion:"Pyke",r1:"The Beast Within",r2:"Deadly Harpoon",r3:"Stalker's Blade",star:"6*-38",player:"TwoStickmen"},
+  {champion:"Pyke",r1:"The Beast Within",r2:"Searing Brilliance",r3:"Stacked Deck",star:"6*-49",player:"ProfSE"},
+  // ── Samira ──
+  {champion:"Samira",r1:"Searing Brilliance",r2:"Chosen by the Stars",r3:"Echoing Spirit",star:"6*-32",player:"TwoStickmen"},
+  // ── Shyvana ──
+  {champion:"Shyvana",r1:"Echoing Spirit",r2:"Celestial Staff",r3:"Champion's Purse",star:"6*-50",player:"Bushi"},
+  {champion:"Shyvana",r1:"Disciple of Shadows",r2:"Wicked Harvest",r3:"Voidborne Carapace",star:"3*-37",player:"kingarkal"},
+  // ── Soraka ──
+  {champion:"Soraka",r1:"Chosen by the Stars",r2:"Cruel Experiments",r3:"Sentinel's Plate",star:"6*-36",player:"Magnum Flare"},
+  {champion:"Soraka",r1:"Chemtech Duplicator",r2:"Sentinel's Plate",r3:"Voidborne Carapace",star:"3*-39",player:"aoeuid"},
+  {champion:"Soraka",r1:"Harmless Scarecrow",r2:"The Berserker's Buckle",r3:"Voidborne Carapace",star:"3*-34",player:"VodopadUmraza"},
+  // ── Spirit Blossom Ahri ──
+  {champion:"Spirit Blossom Ahri",r1:"Echoing Spirit",r2:"Chosen by the Stars",r3:"Lux's Incandescent Baton",star:"6*-43",player:"TwoStickmen"},
+  {champion:"Spirit Blossom Ahri",r1:"Strength of Stone",r2:"Loaded Dice",r3:"Tempest Blade",star:"5*-42",player:"kingarkal"},
+  // ── Spirit Blossom Kindred ──
+  {champion:"Spirit Blossom Kindred",r1:"Disciple of Shadows",r2:"The Grand General's Counterplan",r3:"Wicked Harvest",star:"5*-50",player:"kingarkal"},
+  // ── Spirit Blossom Master Yi ──
+  {champion:"Spirit Blossom Master Yi",r1:"Secret Technique",r2:"The Beast Within",r3:"Perfect Hex Core",star:"6*-43",player:"RoloRolla"},
+  {champion:"Spirit Blossom Master Yi",r1:"Perfect Hex Core",r2:"Disciple of Shadows",r3:"Tempest Blade",star:"5*-44",player:"kingarkal"},
+  // ── Spirit Blossom Teemo ──
+  {champion:"Spirit Blossom Teemo",r1:"Disciple of Shadows",r2:"Chosen by the Stars",r3:"Lux's Incandescent Baton",star:"4*-50",player:"ProfSE"},
+  // ── Spirit Blossom Yasuo ──
+  {champion:"Spirit Blossom Yasuo",r1:"Searing Brilliance",r2:"Yasuo's Windblade",r3:"Frozen Tomb",star:"6*-44",player:"TwoStickmen"},
+  // ── Taliyah ──
+  {champion:"Taliyah",r1:"Frozen Tomb",r2:"Searing Brilliance",r3:"Spectral Scissors",star:"6*-50",player:"cyclonus101"},
+  {champion:"Taliyah",r1:"Frozen Tomb",r2:"Disciple of Shadows",r3:"Tempest Blade",star:"6*-35",player:"HPDARK, ProfSE"},
+  // ── Teemo ──
+  {champion:"Teemo",r1:"Whirling Blade",r2:"Mischiefmaker's Flute",r3:"Ravenous Hydra",star:"3*-34",player:"yramrax"},
+  // ── Twisted Fate ──
+  {champion:"Twisted Fate",r1:"Echoing Spirit",r2:"The Beast Within",r3:"Luden's Tempest",star:"4*-35",player:"diaversai"},
+  // ── Udyr ──
+  {champion:"Udyr",r1:"Starforged Gauntlets",r2:"Hidden Tome",r3:"Luminous Orb",star:"4*-33",player:"HPDARK"},
+  // ── Vex ──
+  {champion:"Vex",r1:"Big Guns",r2:"Hidden Tome",r3:"Loaded Dice",star:"5*-39",player:"BumpyRoad"},
+  {champion:"Vex",r1:"Big Guns",r2:"Voidborne Carapace",r3:"Guardian Angel",star:"4*-38",player:"kingarkal"},
+  {champion:"Vex",r1:"Fear-Cleaving Axe",r2:"Death's Foil",r3:"Big Guns",star:"4*-39",player:"Catamarano"},
+  // ── Vi ──
+  {champion:"Vi",r1:"Cease and Desist",r2:"Scales of Judgement",r3:"Starfire Spellblade",star:"5*-36",player:"glaxxie, Mike Hamster"},
+  {champion:"Vi",r1:"Found Fortune",r2:"Death's Foil",r3:"The Curator's Gatebreaker",star:"6*-34",player:"The Moral Support"},
+  // ── Warwick ──
+  {champion:"Warwick",r1:"The Beast Within",r2:"Loaded Dice",r3:"Ravenous Hydra",star:"6*-50",player:"pizcez13"},
+  {champion:"Warwick",r1:"Cruel Experiments",r2:"Black Shield",r3:"Whirling Blade",star:"6*-42",player:"glaxxie"},
+  {champion:"Warwick",r1:"Wicked Harvest",r2:"Hidden Tome",r3:"Harmless Scarecrow",star:"3*-40",player:"VodopadUmraza"},
+  // ── Yuumi ──
+  {champion:"Yuumi",r1:"Perfect Hex Core",r2:"Full Build",r3:"Ranger's Command",star:"6*-34",player:"Magnum Flare, pizcez13"},
+
 ];
